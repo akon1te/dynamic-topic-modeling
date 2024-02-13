@@ -1,2 +1,7 @@
 venv
 datasets
+*.aux
+*latexmk
+*.fls
+*.log
+*.gz
