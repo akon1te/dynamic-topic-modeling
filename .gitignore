@@ -1,5 +1,5 @@
-venv
-datasets
+.venv
+exps
 *.aux
 *latexmk
 *.fls
