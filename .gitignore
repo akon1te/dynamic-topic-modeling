@@ -1,9 +1,22 @@
+.DS_Store
+__pycache__
 .venv
 datasets
 exps
+
+# Paper
+*.bbl
+*.bcf
+*.out
+*.xml
 *.aux
 *latexmk
 *.fls
 *.log
 *.gz
 *.toc
+
+# Dialogue Topic Segmenter
+checkpoints
+training_log.txt
+
