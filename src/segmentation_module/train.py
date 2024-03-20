@@ -34,7 +34,6 @@ def marginal_ranking_loss(batch, margin):
     batch_tensor = batch[:, :, 0]
 
     # Compute individual losses
-    # coh1 > coh2, coh1 > coh3, coh2 > coh3
     loss_coh1_coh2 = torch.nn.functional.relu(margin - (batch_tensor[:, 0] - batch_tensor[:, 1]))
     loss_coh1_coh3 = torch.nn.functional.relu(margin - (batch_tensor[:, 0] - batch_tensor[:, 2]))
     loss_coh2_coh3 = torch.nn.functional.relu(margin - (batch_tensor[:, 1] - batch_tensor[:, 2]))
