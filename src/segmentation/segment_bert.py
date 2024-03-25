@@ -7,7 +7,7 @@ import numpy as np
 from transformers import AutoModel, AutoTokenizer, AutoModelForNextSentencePrediction
 
 from neural_texttiling import TextTiling
-from coherence_model import CoherenceNet
+from model_utils import CoherenceNet
 
 from tqdm import tqdm
 import warnings
