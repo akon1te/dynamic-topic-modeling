@@ -1,7 +1,6 @@
-
-import torch
 import argparse
 import json
+import torch
 
 import numpy as np
 from transformers import AutoModel, AutoTokenizer, AutoModelForNextSentencePrediction
@@ -13,13 +12,8 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
 
 def data_load(filepath):
-    ######
-    # This function load dialogue samples and their corresponding ground-truth segments.
-    ######
     with open(filepath, 'r') as json_file:
         data = json.load(json_file)
     return data
@@ -33,7 +27,6 @@ def alpha_search(dialogue_data, text_encoder, tokenizer, mode, device, lowerboun
         total_pk = 0
         num_samples = len(dialogue_data)
 
-        # Evaluate each dialogue at the current alpha value
         for dialogue in dialogue_data:
             pk, _, _, _ = TextTiling(
                 dialogue['utterances'], dialogue['segments'], text_encoder, tokenizer, alpha, mode, device)
@@ -45,20 +38,15 @@ def alpha_search(dialogue_data, text_encoder, tokenizer, mode, device, lowerboun
             best_pk = mean_pk
             best_alpha = alpha
 
-    # Return the best alpha and its corresponding Pk score
     return best_alpha, best_pk
 
 
 if __name__ == "__main__":
-    
-    parser = argparse.ArgumentParser(
-        usage='python segment.py -t path/to/data -e text_encoder_name -m CM')
+    parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--dataset',
-                        help='path to the dataset', 
-                        default='dialseg_711.json')
+                        help='path to the dataset')
     parser.add_argument('-e', '--text_encoder', 
-                        help='text encoder for utterances',
-                        default='./dse_checkpoints/cpt_1.pth')
+                        help='text encoder for utterances')
     parser.add_argument('-m', '--mode', 
                         help='sequence classification (SC) / next sentence prediction (NSP) / coherence model (CM)', 
                         default='CM')
@@ -67,14 +55,15 @@ if __name__ == "__main__":
     data = args.dataset
     text_encoder_name = args.text_encoder
     mode = args.mode
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # load encoder model
     if mode == 'SC':
         tokenizer = AutoTokenizer.from_pretrained(text_encoder_name)
-        text_encoder = AutoModel.from_pretrained(text_encoder_name).to(device)     # Sequence Classification
+        text_encoder = AutoModel.from_pretrained(text_encoder_name).to(device) # Sequence Classification
     if mode == 'NSP':
         tokenizer = AutoTokenizer.from_pretrained(text_encoder_name)
-        text_encoder = AutoModelForNextSentencePrediction.from_pretrained(text_encoder_name).to(device)    # Next Sentence Prediction
+        text_encoder = AutoModelForNextSentencePrediction.from_pretrained(text_encoder_name).to(device) # Next Sentence Prediction
     if mode == 'CM':
         tokenizer = AutoTokenizer.from_pretrained('aws-ai/dse-bert-base')
         text_encoder = CoherenceNet(AutoModel.from_pretrained('aws-ai/dse-bert-base'), device)
@@ -90,9 +79,7 @@ if __name__ == "__main__":
             dev_data.append(dialogue)
         else:
             test_data.append(dialogue)
-        # elif dialogue['set'] == 'test': test_data.append(dialogue)
-
-    # Evaluation starts here ...
+            
     # Hyper-parameter (alpha) search on dev set
     best_alpha, best_pk = alpha_search(
         dev_data, text_encoder, tokenizer, mode, device, -2, 2, 0.1)

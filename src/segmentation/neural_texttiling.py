@@ -302,7 +302,7 @@ def get_loss_for_each_utterance(words, losses):
     return utterances, loss_for_each_u
 
 
-def TextTiling_glm(dialogue, reference, text_decoder, tokenizer, threshold, device='cpu'):
+def TextTiling_glm(dialogue, reference, text_decoder, tokenizer, threshold, device):
 
     dialogs = combine_near_two_utterances([dialogue])
 
