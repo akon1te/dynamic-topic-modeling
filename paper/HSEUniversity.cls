@@ -155,8 +155,8 @@
 % Available options for the specialiazation
 % PMI -- Software Engeneers
 \DeclareVoidOption{PMI}{
-	\def\@facultyString{Факультет информатики, математики и компьютерных наук}
-	\def\@specName{Прикладная математика и информатика}
+	\def\@facultyString{Faculty of Informatics, Mathematics, and Computer Science}
+	\def\@specName{Applied Mathematics and Informatics}
 	\def\@specCode{01.03.02}
 }
 
@@ -165,7 +165,7 @@
 	\def\@typeString{Курсовая работа}
 }
 \DeclareVoidOption{VKR}{
-	\def\@typeString{Выпускная квалификационная работа}
+	\def\@typeString{Graduated Qualification Thesis}
 	\HasReviewertrue
 }
 
@@ -207,10 +207,9 @@
 	\centering
 
 	{
-		Нижегородский филиал федерального государственного автономного \\
-		образовательного учреждения высшего образования \\ 
-		<<Национальный исследовательский университет \\ 
-		<<Высшая школа экономики>>
+		FEDERAL STATE AUTONOMOUS EDUCATIONAL INSTITUTION \\
+		FOR HIGHER PROFESSIONAL EDUCATION \\
+		NATIONAL RESEARCH UNIVERSITY HIGHER SCHOOL OF ECONOMICS \\
 	}
 
 	\vfill
@@ -240,7 +239,7 @@
 
 	\ifHasReviewer
 		\begin{minipage}[t]{0.4\textwidth}
-			Рецензент \\
+			Reviewer \\
 			\@reviewerTitle
 
 			\vspace{2mm}
@@ -250,7 +249,7 @@
 	\fi
 	\hfill
 	\begin{minipage}[t]{0.4\textwidth}
-		Руководитель \\
+		Scientific adviser \\
 		\@supervisorTitle
 
 		\vspace{10mm}
@@ -265,13 +264,13 @@
 	\vfill
 	\vfill
 
-	Нижний Новгород, \@year{} год
+	Nizhny Novgorod, \@year{} год
 
 	\newpage
 }
 
 
-\chapter**{Оглавление}
+\chapter**{Contents}
 
 \@starttoc{toc}
 
