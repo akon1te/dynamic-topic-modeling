@@ -10,7 +10,7 @@
 \RequirePackage[T2A]{fontenc}				% Поддержка русских букв
 \RequirePackage[utf8]{inputenc}				% Кодировка utf8
 \RequirePackage{csquotes}
-\RequirePackage[russian]{babel}	% Языки: русский, английский
+\RequirePackage[english]{babel}	% Языки: русский, английский
 
 
 \RequirePackage[font=small,skip=4pt]{caption}
