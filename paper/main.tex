@@ -12,6 +12,7 @@
 \bibliography{library.bib}
 
 \begin{document}
+
 \maketitle
 
 \chapter{Introduction}
@@ -19,30 +20,126 @@
 \section{Motivation}
 
 \section{Research Objectives}
+The objectives of the thesis work are:
+\begin{itemize}
+    \item A review of existing approaches to dynamic text and dialogue topic modelling
+    \item The definition of the main stages for DTM for audio dialogues
+    \item The identification of suitable training data sets and their collection
+    \item An exploration of the possibilities of using large language models for some stages and the selection of models suitable for training in limited resources
+    \item The development of the architecture of all stages and their interconnections
+    \item The identification of key indicators to assess the quality of each stage is also required
+    \item Visual analysis of the pipeline operation on pre-selected audio data
+\end{itemize}
 
 
 \chapter{Theoretical explanation}
 
 The pipeline of dynamic thematic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
-These include segmentation, topic extraction, and topic evolution. 
+These include audio-to-text, dialogue segmentation, topic extraction, and topic evolution. 
 The approaches and algorithms used in these stages will be described in detail from a theoretical point of view.
+
+
+\section{Automatic Speech Recognition Stage}
+
+
 
 \section{Dialogue Segmentation Stage}
 
-Для решения задач в сфере обработки естественного языка до определенного момента широко применялись рекурентный нейронные сети (RNN). Основной архитектурой в таких задачах была модель encoder-decoder\cite{seq2seq:2014} (рис A), в которой каждый из блоков  представлял из себя RNN.
-На вход энкодеру подавались последовательно токены, после чего на выход получался ембеддинг, который в свою очоередь подавался декодеру. Декодер, используя токены изначального предложения, а также переданное представление от кодировщика, генерирует целевую последовательность.
+The dialogue segmentation stage represents the initial stage for textual type of data. 
+At this stage, a set of strings is input, with each line representing an utterance from one dialogue participant. 
+The result is a set of utterance indices that indicate the beginning of a thematically related group. 
+
+In accordance with the majority of previous studies, we have utilise the best open-source solution based on the presented in papers metrics. 
+Let us now examine the algorithm in greater detail. 
+
+The input of stage is a set of utterances $\{u1, u2, ..., uk\}$, splited into pairs of consecutive utterance. 
+All utterances text encode by encoder model.
+
+\subsection{BERT for embeddings extraction}
+
+The BERT model is a Transformer encoder that was first introduced in the article BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding\cite{bert:2018}.  
+This article presents a new approach to the learning process and how BERT is used for downstream tasks.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.21]{img/transformer/enc_dec.png}
-    \caption{Архитекутура encoder-decoder}
+    \includegraphics[scale=0.8]{img/bert.png}
+    \caption{BERT architecture}
 \end{figure}
 
-Но у такой архитекутры были некоторые проблемы. Во-первых, все предствлание текста сжималось в один вектор, чаще всего это из-за многообразие возможных входных данных и огранниченности вектора терялась важная информация. Во-вторых, декодеру могла понадобиться разная информация от энкодера на разных этапах генерации, но декодер видит только одно представление источника.
 
-Чтобы исправить эти проблемы, представили механизм внимания (attention mechanism\cite{attention:2014}).
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.6]{img/bert_input.png}
+    \caption{}
+\end{figure}
 
-\section{Text embeddings extraction}
+The input data for training comprises pairs of sentences separated by a special token separator [SEP] (Figure 2.15). 
+In order to facilitate the model's ability to distinguish between these sentences, it employs segment embeddings in addition to token and position embeddings. 
+BERT also has two learning objectives for which some special tokens ([MASK], [CLS]) are used. 
+
+The first objective of the training process is the masked language modelling (MLM). 
+During the learning phase of MLM, the following occurs:
+
+\begin{itemize}
+    \item A number of tokens are selected with a probability of 15\% for each token.
+    \item The selected tokens are replaced by [MASK] with a probability of 80\%, a random token with a probability of 15\% and remain unchanged with a probability of 10\%.
+    \item The model must predict the original token.
+\end{itemize}
+
+The figure below illustrates an example of a training step for a single sentence.
+
+The Next Sentence Prediction (NSP) task is a binary classification task. 
+In order to understand relationship between two sentences, BERT training process also uses next sentence prediction.
+During training the model gets as input pairs of sentences and it learns to predict if the second sentence is the next sentence in the original text as well. 
+The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.
+
+In terms of our approach to topic segmentation, authors utilise Next Sentence Prediction (NSP) BERT as the encoder, due to the similarity of these two tasks. 
+Both tasks take a pair of sentences/utterances as input, with the objective of predicting the appropriate next sentence, which should be topically related. 
+
+In more detail, the positive instances $(s_{i}, s_{t+i})$ and negative instances $(s_{i}, s_{t-i})$ are fed into the model in the form of the following sequence: 
+\begin{center}
+    $[CLS] s_{i} [SEP] s_{t+/-i} [SEP]$,
+\end{center}
+where the symbols $[CLS]$ and $[SEP]$ represent special tokens in BERT. 
+
+Here, the contextualised representation of $[CLS]$ is employed as the topic-aware embedding to predict the degree of matching between the two input utterances in terms of topic. 
+The topical coherence score is estimated by passing the $[CLS]$ representation through another MLP.
+
+
+\subsection{Depth Scores calculation}
+
+Subsequently, an utterance-pair coherence scoring model is applied to $k - 1$ consecutive pairs, resulting in a sequence of coherence scores $\{c1, c2, ..., ck-1\}$. 
+The value of $c_i \in [0, 1]$ indicates the topical relatedness of the two utterances in the $i_th$ pair. 
+The algorithm utilises coherence scores as a foundation idea, yet enhances them through the sequence of "depth scores". $\{dp1, dp2, ..., dpk-1\}$ is calculated to measure the sharpness of a valley. 
+This is achieved by examining the highest coherence scores $h_l(i)$ and $h_r(i)$ on either side of interval $i$.
+
+The depth score for interval $i$, $dp_i$, is calculated as follows: 
+\begin{center}
+    $D_{pi} = \frac{ h_{l}(i) + h_{r}(i) - 2 \cdot c_{i}}{2}$. 
+\end{center}
+
+A higher depth score indicates a lower topical relatedness between the pair of utterances. 
+The threshold $\tau$, which is used to identify segment boundaries, is computed from the mean $\mu$ and standard deviation $\sigma$ of depth scores: $\tau = \mu - \frac{\sigma}{2}$. 
+A pair of utterances with a depth score exceeding $\tau$ will be selected to have a segment boundary between them. 
+
+
+\section{Topic Extraction Stage}
+
+
+\subsection{Methods overview}
+
+
+\subsection{Large Language Models}
+
+
+\subsection{LLM for topic extraction}
+
+
+\section{Topic Evolution over time}
+
+
+
+\section{Attention mechanism}
 
 Механизм внимания является частью нейронной сети. На каждом этапе декодирования он решает, какие части входных данных важнее всего. При этом кодировщику не нужно сжимать весь исходный код в один вектор - он создает представления для всех токенов источника.
 
@@ -75,7 +172,7 @@ The approaches and algorithms used in these stages will be described in detail f
     \caption{Схема работы self-attention механизма}
 \end{figure}
 
-\subsection{Architecture of BERT model}
+\subsection{Self-attention}
 
 Self-attention - является одним из ключевых компонентов модели, в которой токены взаимодействуют друг с другом. На каждом шаге в энкодере токены обмениваются информацией между собой, собирает контекст и обновляет предыдущее представление себя (рис 2.3). Такой подход полностью исключает последовательную обработку, как в RNN, что ускоряет работу нейронной сети и дает возможность обрабатывать каждое слово параллельно.
 
@@ -208,262 +305,15 @@ Positional encodings можно обучить, но авторы оригина
 
 В трансформаторе остаточные соединения используются после каждого блока внимания и полносвязного блока.
 
-\section{Модель TimeSformer}
-\subsection{Новый подход к решению задач компьютерного зрения}
-
-Сверточные нейронные сети (CNN) являлись базовой архитектурой для задач распознавания изображений и показывали лучшие результаты во всех бенчмарках. Базовым слоем таких сетей являлись свертки, которые обрабатывали все изображения сразу.
-
-Однако в 2016 году Google опубликовали статью, в которой представили новую нейронную сеть для работы с изображениями - Vision Transformer\cite{vit:2016} (далее ViT). Основным отличием от других нейронных сетей для обработки изображений стало использование архитекутры Transformer вместо сверток.
-
-Ключевая идея, лежащая в основе ViT, заключается в обработке изображения как набор патчей (patches), а затем использовании модели на основе Transformer для обработки этих патчей. Участки сначала сглаживаются в набор векторов, которые затем обрабатываются. Это позволяет модели находить и запоминать долгосрочные зависимости между различными патчами, что потенциально приводит к повышению качества модели по сравнению с традиционными CNN.
-
-Так как основной темой работы, являются видео, основной моделью стал не ViT, а еще более новая модель, разработанная Facebook, которая называется TimeSFormer.
-TimeSformer\cite{timesformer:2021} адаптирует стандартную архитектуру Трансформер и приемы, используемые в ViT, к видео, позволяя изучать пространственно-временные характеристики непосредственно из последовательности исправлений на уровне кадров.
-
-\subsection{Обработка входного изображения}
-
-На вход в модель подается разбитое на N частей изображение. Т.к. Трансформер принимает на вход 1D-вектора,  части изображения с помощью линейно проекции \textquotedblrightвытягивают\textquotedblright из 2D в 1D.
-Также как и в задачах обработки текста, на вход в модель кроме патчей надо подать positional encoders.
-Итоговые преобразования изображения выглядят так: \\
-
-\noindent$z_{0} = [x_{class}; x^1_{p} \cdot E; x^2_{p} \cdot E; \dots x^N_{p} \cdot E] + E_{pos} $,\\
-$x \in \mathds{R}^{H \times W \times C}$, $E \in \mathds{R}^{N \times (P^{2} \times C)}$,
-где $C$ - кол-во каналов, $(P, P)$ - размер каждого патча, $N = HW / P^2$
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/vit/patches.png}
-    \caption{Подготовка патчей}
-\end{figure}
-
-В качестве альтернативы патчам изображения, входная последовательность может быть сформирована
-из карт характеристик (feature map) CNN. В этой гибридной модели проекция E применяется к участкам, извлеченным из карты объектов CNN, как частный случай, патчи могут иметь пространственный размер 1x1.
-Патч с классом изображения и positional embeddings добавляются, как описано выше.
-
-
-\subsection{Query-Key-Value вычисления}
-
-TimeSFormer состоит из L блоков энкодера. В каждом блоке $l$, как и в оригинальном трансформере вычисляются Query, Key, Value для каждого патча из его прошлого состояния $z_{(p, t)}^{(l-1)}$
-
-\begin{center}
-    $q_{(p, t)}^{(l, a)} = W_{Q}^{(l, a)} \cdot LN(z_{(p, t)}^{(l-1)}) \in \mathds{R}^{D_{h}}$,
-
-    $q_{(p, t)}^{(l, a)} = W_{K}^{(l, a)} \cdot LN(z_{(p, t)}^{(l-1)}) \in \mathds{R}^{D_{h}}$,
-
-    $q_{(p, t)}^{(l, a)} = W_{V}^{(l, a)} \cdot LN(z_{(p, t)}^{(l-1)}) \in \mathds{R}^{D_{h}}$,
-\end{center}
-где $LN()$ означате LayerNorm, $a = 1, \dots, A$ - индексы голов в Multi-head attention.
-
-\subsection{Attention weights}
-Вычисление self-attention коэффициентов для $a_{(p, t)}^{(l, a)}$ для патча $(p, t)$ вычисляется как:
-
-\begin{center}
-    $a_{(p, t)}^{(l, a)} = SoftMax(\frac{q_{(p, t)}^{(l, a)}}{\sqrt{D_{h}}}^{T} \cdot \left[k_{(0, 0)}^{(l, a)} {k_{(p', t')}^{(l, a)}}_{p' = 1, \dots, N, t' = 1, \dots, F} \right])$
-\end{center}
-
-\subsection{Encoding}
-
-Закодированное представление $z_{(p, t)}^{(l)}$ в блоке $l$ получается путем вычисления взвешенной суммы векторов значений с использованием коэффициентов self-attention от каждой головы multi-head attention:
-
-\begin{center}
-    $s_{(p, t),(0, 0)}^{(l, a)} = a_{(p, t),(0, 0)}^{(l, a)} \cdot v_{(0, 0)} + \sum\limits_{p'=1}^N \sum\limits_{t'=1}^F a_{(p, t),(p', t')}^{(l, a)} \cdot a_{(p', t')}^{(l, a)}$
-\end{center}
-
-Затем векторы каждого головы конкатенируются, проецируется и передается через MLP, используя residual connections после каждой операции:
-
-\begin{center}
-    $z'_{(p, t)}^{(l)} = W_{O} \cdot \begin{bmatrix}
-            s_{(p, t)}^{(l, 1)} \\
-            \vdots              \\
-            s_{(p, t)}^{(l, A)}
-        \end{bmatrix} + z_{(p, t)}^{(l - 1)}$
-
-    $z_{(p, t)}^{(l)} = MLP(LN(z'_{(p, t)}^{(l)})) + z'_{(p, t)}^{(l)}$
-\end{center}
-
-Для финальной классификации используется MLP с 1 скрытым слоем. \\
-
-Ниже представлен блок энкодера в TimeSFormer:
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=.9]{img/vit/timesformer.png}
-    \caption{Энкодер блок в TimeSFormer}
-\end{figure}
-
 \newpage
+
 \section{Модель RoBERTa}
 
-\subsection{BERT}
 
-BERT был представлен в статье BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding\cite{bert:2018}. Архитектура модели BERT - это энкодер Transformer. По новому подошли к процессу обучения и к тому, как BERT используется для последующих задач.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.8]{img/bert/bert.png}
-    \caption{Архитектура BERT}
-\end{figure}
-
-\begin{center}
-    \textbf{Новый способ обучения}
-\end{center}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.6]{img/bert/bert_input.png}
-    \caption{Входные данные}
-\end{figure}
-
-Входные данные для обучения: пары предложений со  разделенных специальным токеном-разделителем [SEP] (рис 2.15). Чтобы модель могла легко различать эти предложения, в дополнение к токеновым и позиционным вложениям она использует вложения сегментов. Также BERT имеет 2 цели обучения, для которых используются некоторые специальные токены([MASK], [CLS]). \\
-
-\begin{center}
-    \textbf{Первая цель обучения обучения: Masked Language Modeling (MLM)}
-\end{center}
-Наиболее важной из двух целей обучения является цель моделирования замаскированного языка (MLM). На этапе обучения для MLM происходит следующее:
-\begin{itemize}
-    \item Выбирается несколько токенов (каждый токен выбирается с вероятностью 15\%)
-    \item Выбранные токены заменяются на [MASK] с вероятности 80\%, случайный токен - 15\% и остается без изменений - 10\%
-    \item Модель должна предсказать исходный токен
-\end{itemize}
-
-На рисунке ниже показан пример шага обучения для одного предложения.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.18]{img/bert/bert_tasks.png}
-    \caption{Masked Language Modeling (MLM)}
-\end{figure}
-\newpage
-\begin{center}
-    \textbf{Вторая цель обучения обучения: Next Sentence Prediction (NSP)}
-\end{center}
-
-Задача «Предсказание следующего предложения» (NSP) представляет собой задачу бинарной классификации. На последнем уровне модели, исходя из токена [CLS], модель предсказывает, являются ли два предложения последовательными предложениями в некотором тексте или нет. В датасете для обучения, представленном в оригинальной статье сказанно, что при обучении 50\% примеров содержат последовательные предложения, извлеченные из обучающих текстов, а еще 50\% — случайную пару предложений.
-
-Это задание учит модель понимать отношения между предложениями и позволяет BERT решать более сложные задачи.
-
-\begin{center}
-    Пример из исходного датасета:
-\end{center}
-
-Ввод: [CLS] мужчина пошел в [MASK] магазин [SEP] он купил галлон [MASK] молока [SEP]
-
-Метка: Последовательные \\
-
-Ввод: [CLS] мужчина пошел в магазин [MASK] [SEP] пингвин [MASK] летают \#\#less birds [SEP]
-
-Метка: Непоследовательные\\
-
-Следует также упомянуть, что BERT подходит для решения разных задач, ниже приведены основные типы задач:
-
-\begin{itemize}
-    \item Классификация отдельных предложений
-          Для классификации отдельного предложения, вводятся токены предложения и [CLS] с классом предложения.
-    \item Классификация пар предложений
-          Для классифицикации пары предложений, вводятся токены предложений, как в обучении, и и [CLS] с классом предложения.
-    \item Ответ на вопрос (Question answering)
-          В задачах вопросов на ответы, на вход дают тект и вопрос. Ответ на этот вопрос содержится в исходном тексте, и задача состоит в том, чтобы найти отрывок из текста с ответом.
-    \item Тэгирование слов в предложении
-          В задачах тегирования прогнозируются теги для каждого токена. Например, в распознавании именованных объектов (NER) вы должны предсказать, является ли слово именованным объектом и его типом (например, местоположение, человек и т. д.).
-\end{itemize}
-
-
-\subsection{RoBERTa - улучшенная версия BERT}
-
-Модель RoBERTa была предложена в книге RoBERTa: A Robustly Optimized BERT Pretraining Approach\cite{roberta:2019}. Он основан на модели Google BERT, выпущенной в 2018 году. Она основан на BERT и изменяет ключевые гиперпараметры, удаляя цель предварительного обучения в следующем предложении и обучая с гораздо большими мини-батчами и learning rate. \\
-
-Список основных изменений представлен ниже:
-\begin{itemize}
-    \item Обучение большем объем данных (в 10 раз больше) и дольше по времени.
-    \item Входные данные представляют собой более длинные последовательности, при оставшемся ограничении в 512 токенов, как и у BERT
-    \item Динамическое маскирование токенов: токены маскируются по-разному в каждую эпоху, тогда как BERT делает это раз и навсегда
-    \item Использование большого батча (относительно исходного BERT с батчем 256) при обучении модели
-    \item Использование Byte-Pair Encoding с байтами в качестве субъединицы, а не с символами (из-за символов юникода)
-\end{itemize}
 
 
 \newpage
-\section{Модель Wave2vec 2.0}
-
-Фреймворк wave2vec 2.0\cite{w2v:2020} разработан для self-supervised обучения эмбеддингов на основе необработанных аудиоданных. Модель кодирует речевой звук с помощью многослойной сверточной нейронной сети, а затем маскирует участки результирующих скрытых речевых представлений, аналогично моделированию замаскированного языка (MLM), который был разобран в разделе про BERT. Скрытые представления передаются в Трансформер для построения контекстуализированных эмбеддингов, и модель обучается с помощью contrastive learning.
-
-
-Как показано на рисунке ниже, модель обучается в два этапа. Первый этап проходит в режиме самоконтроля, который выполняется с использованием немаркированных данных и направлен на достижение наилучшего возможного представления речи. Вы можете думать об этом так же, как вы думаете о встраивании слов. Эмбеддинги слов также направлено на достижение наилучшего представления естественного языка. Основное отличие заключается в том, что Wav2Vec 2.0 обрабатывает аудио вместо текста.
-
-Вторая фаза обучения - это контролируемая тонкая настройка, в ходе которой помеченные данные используются для обучения модели предсказывать определенные слова или фонемы (наименьшая возможная звуковая единица в определенном языке).
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.8]{img/wave2vec/w2v_stages.png}
-    \caption{Этабы обучения wave2vec}
-\end{figure}
-
-Архитектура окончательной модели, используемой для прогнозирования, состоит из трех основных частей:
-
-\begin{itemize}
-    \item Cверточные слои, которые обрабатывают входные данные необработанной формы сигнала для получения скрытого представления - Z,
-    \item Трансформер из n слоев, создающий эмбеддинги с контекстом - C,
-    \item линейная проекция на выходные данные - Y
-\end{itemize}
-
-\subsection{Контрастивное обучение}
-Контрастивное обучение - это концепция, в рамках которой входные данные преобразуются двумя различными способами. После этого модель обучается распознавать, являются ли два преобразования входных данных по-прежнему одним и тем же объектом. В Wav2Vec 2.0 трансформаторные слои являются первым способом преобразования, второй осуществляется путем квантования, что будет объяснено в дальнейшей части этой статьи. Более формально, для замаскированного скрытого представления $z_{t}$ мы хотели бы получить такое контекстное представление $c_{t}$, чтобы иметь возможность угадать правильное квантованное представление $q_{t}$ среди других квантованных представлений.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.25]{img/wave2vec/wave2vec.png}
-    \caption{Входные данные}
-\end{figure}
-
-\subsection{Квантизация}
-Квантизация - это процесс преобразования значений из непрерывного пространства в конечный набор значений в дискретном пространстве.
-
-У нас есть вектор представления скрытой речи $z_{t}$ охватывает несколько фонем. Число фонем в языке конечно. Более того, число всех возможных пар фонем конечно. Это означает, что они могут быть идеально представлены одним и тем же скрытым речевым представлением. Кроме того, их число конечно, поэтому мы можем создать "кодовую книгу", содержащий все возможные пары фонем. Затем квантование сводится к выбору правильного кодового слова из "кодовую книгу". Однако вы можете себе представить, что количество всевозможных звуков огромно. Чтобы упростить обучение и использование, авторы Wav2Vec 2.0 создали G кодовых книг, каждая из которых состоит из V кодовых слов. Чтобы создать квантизированное представление, следует выбрать лучшее слово из каждой кодовой книги. Затем выбранные векторы объединяются и обрабатываются линейным преобразованием для получения квантизированное представления.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.7]{img/wave2vec/w2v_books.png}
-    \caption{Выбор токена их кодовых книг}
-\end{figure}
-
-
-Выбор правильного кодовго представления выбирается с помощью Gumbel softmax:
-
-\begin{center}
-    $p_{g, v} = \frac{exp{\frac{sim(l_{g, v} + n_{v})}{\tau}}}{\displaystyle\sum_{k=1}^{V} exp{\frac{l_{g, k} + n_{k}}{\tau}}}$,
-    где
-    \begin{itemize}
-        \item sim — косинусное сходство,
-        \item l — логиты, полученные свертками,
-        \item $n_{k} = -log(-log(gl))$,
-        \item $u_{k}$ - выборки из равномерного распределения U(0, 1),
-        \item $\tau$ - температура
-    \end{itemize}
-\end{center}
-
-Поскольку это задача классификации, функция softmax представляется естественным выбором для выбора наилучшего кодового слова в каждой кодовой книге. Gumbel softmax поставляется с двумя улучшениями: рандомизацией и температурой $\tau$. Благодаря рандомизации модель более охотно выбирает разные кодовые слова во время обучения, а затем обновляет их веса. Важно, особенно в начале обучения, не допускать использования только подмножества кодовых книг.
-
-\subsection{Diversity loss (Потеря разнообразия)}
-
-Потеря разнообразия - это своего рода метод регуляризации. Авторы установили G=2 кодовых книги с V=320 кодовыми словами в каждой кодовой книге. Теоретически это дает $320 \cdot 320 = 102400$ возможных квантованных представлений. Но в процессе обучения можно  столкнутся с проблемой того, что модель использовать все эти возможности. Она научится использовать, например, только 100 кодовых слов из каждой кодовой книги и растратит весь потенциал кодовой книги впустую. Вот почему потеря разнообразия может быть полезной. Он основан на энтропии, которая может быть вычислена по следующей формуле:
-
-\begin{center}
-    $H(x) = - \displaystyle\sum_{x} P(x)\cdot log(P(x))$, где
-\end{center}
-
-$x$ — возможный результат действия дискретной случайной величины $X$,
-
-$P(x)$ — вероятность события $x$. \\
-
-Энтропия принимает максимальное значение, когда распределение данных является равномерным. В случае wave2vec это означает, что все кодовые слова используются с одинаковой частотой. С помощью этого производится вычисление энтропию каждой кодовой книги по всей серии обучающих примеров, чтобы проверить, используются ли кодовые слова с одинаковой частотой. Максимизация этой энтропии побудит модель использовать преимущества всех кодовых слов. Максимизация равна минимизации отрицательной энтропии, которая является потерей разнообразия.\\
-
-\begin{center}
-    $L_{d} = \frac{1}{GV} \cdot (-H(\overline{p}_{g})) = \frac{1}{GV}\displaystyle\sum_{g=1}^{G}\displaystyle\sum_{v=1}^{V} \overline{p}_{g, v} \cdot log(\overline{p}_{g, v})$
-\end{center}
-
-
-\newpage
-\chapter{Практическая часть}
+\chapter{Experiments}
 
 Основной задачей в работе будет классификация видео на наличие юмора с использованием разных моделей для разных модальностей.
 Для работы с разными модальностями будут использованы 3 модели, которые были описаны в теоретической части:
