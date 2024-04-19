@@ -56,7 +56,8 @@ if __name__ == "__main__":
     text_encoder_name = args.text_encoder
     mode = args.mode
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+    print('[INFO] Device:', device)
+    
     # load encoder model
     if mode == 'SC':
         tokenizer = AutoTokenizer.from_pretrained(text_encoder_name)
@@ -81,31 +82,31 @@ if __name__ == "__main__":
             test_data.append(dialogue)
             
     # Hyper-parameter (alpha) search on dev set
-    best_alpha, best_pk = alpha_search(
-        dev_data, text_encoder, tokenizer, mode, device, -2, 2, 0.1)
-    print('[INFO] The loaded text encoder is: ', text_encoder_name)
+    #best_alpha, _ = alpha_search(
+    #    dev_data, text_encoder, tokenizer, mode, device, -2, 2, 1)
+    best_alpha = 1
     print('[INFO] The best hyper-parameter (alpha): ', best_alpha)
 
-    # Evaluation on test set
     total_pk = 0
     total_wd = 0
     total_f1 = 0
     num_samples = len(test_data)
     for i, dialogue in tqdm(enumerate(test_data), total=len(test_data), desc='Evaluating TEST set'):
-        pk, wd, f1, pred_segments = TextTiling(
-            dialogue['utterances'], dialogue['segments'], text_encoder, tokenizer, best_alpha, mode, device)
+        pk, wd, f1, pred_segments = TextTiling(dialogue['utterances'], 
+                                               dialogue['segments'], 
+                                               text_encoder, 
+                                               tokenizer,
+                                               best_alpha,
+                                               mode, 
+                                               device)
         total_pk += pk
         total_wd += wd
         total_f1 += f1
 
-    # Compute the mean scores
     mean_pk = total_pk / num_samples
     mean_wd = total_wd / num_samples
     mean_f1 = total_f1 / num_samples
 
-    # Print or return the mean scores
-    print('-----------------------------------')
     print(f"Mean P_k score: {mean_pk}")
     print(f"Mean WindowDiff score: {mean_wd}")
     print(f"Mean F1 score: {mean_f1}")
-    print('-----------------------------------')

@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from neural_texttiling import TextTiling_glm
+from neural_texttiling import text_tiling_llm
 
 from tqdm import tqdm
 import warnings
@@ -27,11 +27,15 @@ def threshold_search(dialogue_data, text_decoder, tokenizer, device, lowerbound,
         num_samples = len(dialogue_data)
         
         for dialogue in dialogue_data:
-            pk, _, _, _ = TextTiling_glm(dialogue['utterances'], dialogue['segments'], text_decoder, tokenizer, threshold, device)
+            pk, _, _, _ = text_tiling_llm(dialogue['utterances'], 
+                                          dialogue['segments'], 
+                                          text_decoder, 
+                                          tokenizer, 
+                                          threshold, 
+                                          device)
             total_pk += pk
 
         mean_pk = total_pk / num_samples
-
         if mean_pk < best_pk:
             best_pk = mean_pk
             best_threshold = threshold
@@ -51,9 +55,8 @@ if __name__ == "__main__":
     data = args.dataset
     text_decoder_name = args.text_decoder
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print('Device:', device)
+    print('[INFO] Device:', device)
 
-    # load generative model
     text_decoder = AutoModelForCausalLM.from_pretrained(text_decoder_name).to(device)
     tokenizer = AutoTokenizer.from_pretrained(text_decoder_name)
 
@@ -62,24 +65,38 @@ if __name__ == "__main__":
     dev_data, test_data = [], []
     
     for dialogue in dialogue_data:
-        if dialogue['set'] == 'dev': dev_data.append(dialogue)
-        else: test_data.append(dialogue)
+        if dialogue['set'] == 'dev': 
+            dev_data.append(dialogue)
+        else: 
+            test_data.append(dialogue)
 
     ## Threshold search on dev set
-    best_threshold, best_pk = threshold_search(dev_data, text_decoder, tokenizer, device, 0, 5, 1)
-    print('[INFO] The loaded text decoder is: ', text_decoder_name)
-    print('[INFO] The best threshold: ', best_threshold)
+    #best_threshold, _ = threshold_search(dev_data, text_decoder, tokenizer, device, 0, 5, 1)
+    best_threshold = 4
+    #print('[INFO] The best threshold: ', best_threshold)
 
     ## Evaluation on test set
     total_pk = 0
     total_wd = 0
     total_f1 = 0
-    num_samples = len(test_data)
-    for i, dialogue in tqdm(enumerate(test_data), total=len(test_data), desc='Evaluating TEST set'):
-        pk, wd, f1, pred_segments = TextTiling_glm(dialogue['utterances'], dialogue['segments'], text_decoder, tokenizer, best_threshold, device)
-        total_pk += pk
-        total_wd += wd
-        total_f1 += f1
+    num_samples = 0
+    print(len(test_data))
+    for idx, dialogue in enumerate(tqdm(test_data, total=len(test_data))):
+        if num_samples == 520:
+            break
+        try:
+            pk, wd, f1, pred_segments = text_tiling_llm(dialogue['utterances'], 
+                                                    dialogue['segments'], 
+                                                    text_decoder, 
+                                                    tokenizer, 
+                                                    best_threshold, 
+                                                    device)
+            total_pk += pk
+            total_wd += wd
+            total_f1 += f1
+            num_samples += 1
+        except:
+            print("errror on ", idx)
 
     # Compute the mean scores
     mean_pk = total_pk / num_samples
@@ -87,9 +104,7 @@ if __name__ == "__main__":
     mean_f1 = total_f1 / num_samples
 
     # Print or return the mean scores
-    print('-----------------------------------')
     print(f"Mean P_k score: {mean_pk}")
     print(f"Mean WindowDiff score: {mean_wd}")
     print(f"Mean F1 score: {mean_f1}")
-    print('-----------------------------------')
         

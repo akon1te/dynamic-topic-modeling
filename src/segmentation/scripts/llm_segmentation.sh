@@ -1,6 +1,6 @@
 #!/bin/bash
-DATASET=./datasets/eval/dialseg_711.json
-ENCODER_LLM_MODEL=microsoft/DialoGPT-medium
+DATASET=./datasets/eval/superseg.json
+ENCODER_LLM_MODEL=microsoft/DialoGPT-large
 
 python ./src/segmentation/segment_llm.py \
 --dataset $DATASET \

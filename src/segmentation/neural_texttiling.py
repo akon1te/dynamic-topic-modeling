@@ -1,8 +1,8 @@
-import segeval
-from sklearn.metrics import f1_score
 import torch
+import segeval
+
+from sklearn.metrics import f1_score
 import numpy as np
-from sentence_transformers import SentenceTransformer
 
 
 def similarity_computing(texts, tokenizer, text_encoder, mode, device):
@@ -49,7 +49,6 @@ def similarity_computing(texts, tokenizer, text_encoder, mode, device):
 
 
 def depth_computing(scores):
-
     num_scores = len(scores)
     depth_scores = []
 
@@ -302,7 +301,7 @@ def get_loss_for_each_utterance(words, losses):
     return utterances, loss_for_each_u
 
 
-def TextTiling_glm(dialogue, reference, text_decoder, tokenizer, threshold, device):
+def text_tiling_llm(dialogue, reference, text_decoder, tokenizer, threshold, device):
 
     dialogs = combine_near_two_utterances([dialogue])
 
