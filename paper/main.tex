@@ -12,16 +12,15 @@
 \bibliography{library.bib}
 
 \begin{document}
-
 \maketitle
 
 \chapter{Introduction}
 
-\section{Motivation}
+\section{Relevance of the topic}
 
 \section{Research Objectives}
 The objectives of the thesis work are:
-\begin{itemize}
+\begin{enumerate}
     \item A review of existing approaches to dynamic text and dialogue topic modelling
     \item The definition of the main stages for DTM for audio dialogues
     \item The identification of suitable training data sets and their collection
@@ -29,10 +28,163 @@ The objectives of the thesis work are:
     \item The development of the architecture of all stages and their interconnections
     \item The identification of key indicators to assess the quality of each stage is also required
     \item Visual analysis of the pipeline operation on pre-selected audio data
+\end{enumerate}
+
+
+\chapter{Literature review}
+
+\section{Transformer architecture}
+
+Prior to 2017 (the publication of the original Transformer article), the main approach to working with sequences was to use Recurrent Neural Networks (RNN). However, this approach has several well-known drawbacks:
+
+First, RNN hold all information about the sequence in a hidden state that is updated with each step. 
+If the model needs to "remember" something that happened hundreds of steps ago, that information must be stored in a hidden state and not replaced with something new. 
+Therefore, you either have to have a very large hidden state, or accept the loss of information.
+
+Second, training recurrent networks is difficult to parallelize: to get the hidden state of the RNN layer for step $i$, you have to compute the state for step $i - 1$.
+
+Both problems make it difficult to apply RNN to really long sequences: even if you wait until the end of training, your model will somehow lose information about what was at the beginning of the text. 
+It is necessary to have method to "read" the sequence so that at any point in time it is possible to refer to an arbitrary point in the past in constant time and without loss of information. 
+This is the self-attention mechanism underlying Transformer, introduced in "Attention is all you need" paper.
+
+\subsection{Self-attention}
+
+Self-attention represents a key component of the model in which tokens' information interact with each other.
+At each stage of the encoder, tokens exchange information with one another, gather contextual data, and refine their previous representations (Figure 2.3). 
+
+For each input token trainable projections $W_Q$, $W_K$, $W_V$ obtained three representations interpreted by humans as a query ($q_i$), a key ($k_i$), and a value ($v_i$).
+\begin{itemize}
+    \item $q_i$ - query for other tokens about the information;
+    \item $k_i$ - keys that will be used to extract information about the token;
+    \item $v_i$ - values of information;
 \end{itemize}
 
+Next are the attention weights that will be applied to the values from which the important information will be extracted:
+\begin{center}
+    $Weights_{i} = softmax(\frac{q_i \cdot k_{1}^T}{C}, \frac{q_i \cdot k_{2}^T}{C}, \dots)$,
+\end{center}
 
-\chapter{Theoretical explanation}
+where $C$ is some normalization constant, $\sqrt[]{d}$ of the dimension of keys and values was taken as a normalization constant. 
+
+The output of the self-attention layer is a weighted sum of values with coefficients in the form of attention weights. In vectorized form, you can write:
+
+\begin{center}
+    $Attention(q, k, v) = softmax(\frac{Q \cdot K^T}{\sqrt{d_k}}) \cdot V $
+\end{center}
+
+The figure below shows the complete algorithm for the interaction of Q, K, V in the self-attention mechanism.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=1]{img/query-key-value.png}
+    \caption{Query, Key, Value in Self-Attention mechanism}
+\end{figure}
+
+In the decodert part the structure of the attention mechanism is different. 
+They use Masked self-attention. In the form of attention described above, each token will "look" at the entire sequence, which is undesirable for the decoder. 
+Indeed, in the generation stage, we will generate one token per step, and access to subsequent steps in the training stage will lead to information leakage in the decoder and poor model quality. 
+To avoid this problem, you need to apply an autoregressive mask when training attention, by manually adjusting the
+weights for future tokens before softmax, so that their probabilities become zero after softmax. As you can see in the image below (source), this mask has a lower triangular appearance.
+
+\subsection{Multi-head attention}
+
+One set of $Q, K, V$ can reflect only one type of dependency between tokens, and matrices extract only a limited amount of information from input representations. 
+To compensate for this suboptimality, the authors of the architecture proposed an approach with multiple "heads" of attention (multi-head attention): 
+in fact, instead of one layer of attention, we use several parallel ones with different weights, and then aggregate the results. The figure below shows what multi-head attention looks like:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{img/multi-head.png}
+    \caption{Query, Key, Value in Self-Attention mechanism}
+\end{figure}
+
+\subsection{Feed forward and Add \& Norm}
+
+In addition to the attention blocks, the Transformer also contains feed-forward layers consisting of a linear layer and a ReLU activation function.
+The FFN layer can be expressed as follows: \\
+$FFN(x) = act(xW_{1} + b_{1}) \dot W_{2} + b_{2}$,
+
+Intermediate activations in FFN are different: it all started with the well-known ReLU, but at some point the community switched to GELU (Gaussian Error Linear Unit) with a formula $x\Phi(x)$, where $\Phi$ - is the distribution function of a standard normal random variable
+\\
+
+The second important layer is LayerNorm, which independently normalizes the vector representation of each sequence in the batch. 
+The vector representation of each token is normalized in the Transformer. In addition, LayerNorm has trainable parameters, $scale$ and $bias$, which are used after normalization to scale the output of the layer.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=1]{img/layer_norm.png}
+    \caption{LayerNorm слой}
+\end{figure}
+
+In Figure 2.8, note that $\mu_{k}$ and $\sigma_{k}$ are evaluated for each sequence, unlike $scale$ and $bias$, which are layer parameters.
+
+\subsection{Positional encoding}
+
+Since the model does not know the order of the input tokens, because all tokens are processed simultaneously, therefore we must explicitly show the model the position of the tokens. 
+To do this, we have two sets of attachments: for the tokens themselves and for their positions. 
+Then the input representation of the token is the sum of the two attachments.
+Positional encodings can be trained, but the authors of the original article found that the presence of corrected attachments does not degrade the quality of the model. The final formula for positional embeddings looks like this:
+
+\begin{center}
+    $PE_{pos,2i} = \sin(pos/10000^{2i/d_{model}})$, \\
+    $PE_{pos,2i+1} = \cos(pos/10000^{2i/d_{model}})$, \\
+\end{center}
+where $pos$ is a position and $i$ is a vector dimension. Each measure of position encoding corresponds to a sine wave, and the wavelengths form a geometric progression from $2\pi$ to 10,000$\cdot 2\pi$.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=1]{img/pos_encoding.png}
+    \caption{Positional encoding}
+\end{figure}
+
+A newer version of positional encoding is rotary embeddings.
+Rotary Position Embedding, or RoPE, is a type of position embedding that encodes absolute position information with a rotation matrix and naturally incorporates explicit relative position dependency into the self-attention formulation. 
+In particular, RoPE has valuable properties such as the flexibility to be extended to arbitrary sequence lengths, decaying inter-token dependency with increasing relative distances, and the ability to augment linear self-attention with relative position encoding. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{img/rotary_embs.png}
+    \caption{Rotary embeddings}
+\end{figure}
+
+\section{BERT}
+
+The BERT is a language model based on the transformer architecture, that was first introduced in the article BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding\cite{bert:2018}.  
+From an architectural point of view, BERT consists of 12 encoder blocks, including a Self-Attention mechanism, Normalization and Feed-forward layers.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.8]{img/bert.png}
+    \caption{BERT architecture}
+\end{figure}
+
+
+\subsection[short]{Training tasks}
+BERT has two pretrain objective described in article: \\
+The first objective of the training process is the masked language modelling (MLM). 
+During the training phase of MLM, the following occurs:
+
+\begin{itemize}
+    \item A number of tokens are selected with a probability of 15\% for each token.
+    \item The selected tokens are replaced by [MASK] with a probability of 80\%, a random token with a probability of 15\% and remain unchanged with a probability of 10\%.
+    \item The model must predict the original token.
+\end{itemize}
+
+Secondly, Next Sentence Prediction (NSP) task is a binary classification task. 
+In order to understand relationship between two sentences, BERT training process also uses next sentence prediction.
+During training the model gets as input pairs of sentences and it learns to predict if the second sentence is the next sentence in the original text as well. 
+The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.
+
+
+\section{Large Language models}
+
+
+\subsection{LLaMA}
+
+
+\subsection{Mistral}
+
+
 
 The pipeline of dynamic thematic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
 These include audio-to-text, dialogue segmentation, topic extraction, and topic evolution. 
@@ -42,56 +194,14 @@ The approaches and algorithms used in these stages will be described in detail f
 \section{Automatic Speech Recognition Stage}
 
 
-
 \section{Dialogue Segmentation Stage}
 
 The dialogue segmentation stage represents the initial stage for textual type of data. 
-At this stage, a set of strings is input, with each line representing an utterance from one dialogue participant. 
 The result is a set of utterance indices that indicate the beginning of a thematically related group. 
 
 In accordance with the majority of previous studies, we have utilise the best open-source solution based on the presented in papers metrics. 
+It is algorithm from Improving Unsupervised Dialogue Topic Segmentation with Utterance-Pair Coherence Scoring by Linzi Xing and Giuseppe Carenini (2020)
 Let us now examine the algorithm in greater detail. 
-
-The input of stage is a set of utterances $\{u1, u2, ..., uk\}$, splited into pairs of consecutive utterance. 
-All utterances text encode by encoder model.
-
-\subsection{BERT for embeddings extraction}
-
-The BERT model is a Transformer encoder that was first introduced in the article BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding\cite{bert:2018}.  
-This article presents a new approach to the learning process and how BERT is used for downstream tasks.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.8]{img/bert.png}
-    \caption{BERT architecture}
-\end{figure}
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.6]{img/bert_input.png}
-    \caption{}
-\end{figure}
-
-The input data for training comprises pairs of sentences separated by a special token separator [SEP] (Figure 2.15). 
-In order to facilitate the model's ability to distinguish between these sentences, it employs segment embeddings in addition to token and position embeddings. 
-BERT also has two learning objectives for which some special tokens ([MASK], [CLS]) are used. 
-
-The first objective of the training process is the masked language modelling (MLM). 
-During the learning phase of MLM, the following occurs:
-
-\begin{itemize}
-    \item A number of tokens are selected with a probability of 15\% for each token.
-    \item The selected tokens are replaced by [MASK] with a probability of 80\%, a random token with a probability of 15\% and remain unchanged with a probability of 10\%.
-    \item The model must predict the original token.
-\end{itemize}
-
-The figure below illustrates an example of a training step for a single sentence.
-
-The Next Sentence Prediction (NSP) task is a binary classification task. 
-In order to understand relationship between two sentences, BERT training process also uses next sentence prediction.
-During training the model gets as input pairs of sentences and it learns to predict if the second sentence is the next sentence in the original text as well. 
-The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.
 
 In terms of our approach to topic segmentation, authors utilise Next Sentence Prediction (NSP) BERT as the encoder, due to the similarity of these two tasks. 
 Both tasks take a pair of sentences/utterances as input, with the objective of predicting the appropriate next sentence, which should be topically related. 
@@ -103,11 +213,12 @@ In more detail, the positive instances $(s_{i}, s_{t+i})$ and negative instances
 where the symbols $[CLS]$ and $[SEP]$ represent special tokens in BERT. 
 
 Here, the contextualised representation of $[CLS]$ is employed as the topic-aware embedding to predict the degree of matching between the two input utterances in terms of topic. 
-The topical coherence score is estimated by passing the $[CLS]$ representation through another MLP.
+The topic coherence scores are estimated by passing the $[CLS]$ representation through another MLP.
 
 
 \subsection{Depth Scores calculation}
 
+The input of stage is a set of utterances $\{u1, u2, ..., uk\}$. 
 Subsequently, an utterance-pair coherence scoring model is applied to $k - 1$ consecutive pairs, resulting in a sequence of coherence scores $\{c1, c2, ..., ck-1\}$. 
 The value of $c_i \in [0, 1]$ indicates the topical relatedness of the two utterances in the $i_th$ pair. 
 The algorithm utilises coherence scores as a foundation idea, yet enhances them through the sequence of "depth scores". $\{dp1, dp2, ..., dpk-1\}$ is calculated to measure the sharpness of a valley. 
@@ -115,7 +226,7 @@ This is achieved by examining the highest coherence scores $h_l(i)$ and $h_r(i)$
 
 The depth score for interval $i$, $dp_i$, is calculated as follows: 
 \begin{center}
-    $D_{pi} = \frac{ h_{l}(i) + h_{r}(i) - 2 \cdot c_{i}}{2}$. 
+    $D_{pi} = \frac{h_{l}(i) + h_{r}(i) - 2 \cdot c_{i}}{2}$. 
 \end{center}
 
 A higher depth score indicates a lower topical relatedness between the pair of utterances. 
@@ -126,188 +237,12 @@ A pair of utterances with a depth score exceeding $\tau$ will be selected to hav
 \section{Topic Extraction Stage}
 
 
-\subsection{Methods overview}
-
-
-\subsection{Large Language Models}
-
-
 \subsection{LLM for topic extraction}
 
 
 \section{Topic Evolution over time}
 
 
-
-\section{Attention mechanism}
-
-Механизм внимания является частью нейронной сети. На каждом этапе декодирования он решает, какие части входных данных важнее всего. При этом кодировщику не нужно сжимать весь исходный код в один вектор - он создает представления для всех токенов источника.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.3]{img/transformer/attention_mech1.png}
-    \caption{Схема работы механизма внимания}
-\end{figure}
-
-\newpage
-Алгоритм работы механизма внимания в encoder-decoder модели приведен ниже.
-
-\begin{itemize}
-    \item На каждом этапе декодирования механизм внимания получает на вход: состояние декодера $h_t$ и все состояния кодировщика $s_1, s_2, \dots, s_m$
-    \item Вычисляет коэффициенты внимания (attention scores) для каждого состояния кодеровщика $s_k$ механизм внимания вычисляет свою "релевантность" для этого состояния декодера $h_t$. \\
-          Для вычисления можно применить любую функцию, однако, есть несколько популярных и простых вариантов, которые работают довольно хорошо.
-          \begin{itemize}
-              \item $scores(h_t, s_k) = h_t^T \cdot s_k $
-              \item $scores(h_t, s_k) = h_t^T \cdot W \cdot s_k $, где $W$ - матрица (обучаемый параметр)
-              \item $scores(h_t, s_k) = w_2^T \cdot \tanh(W \cdot [h_t^T, s_k]) $, где $W, w_2$ - матрицы (обучаемые параметры), а $[h_t^T, s_k]$ означает конкатенацию векторов
-          \end{itemize}
-
-    \item Вычисляет веса внимания (attention weights): распределение вероятностей - softmax, применяемое к показателям внимания;
-    \item Вычисляет вывод внимания : взвешенная сумма состояний декодера с весами внимания.
-\end{itemize}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/transformer/self-attention.png}
-    \caption{Схема работы self-attention механизма}
-\end{figure}
-
-\subsection{Self-attention}
-
-Self-attention - является одним из ключевых компонентов модели, в которой токены взаимодействуют друг с другом. На каждом шаге в энкодере токены обмениваются информацией между собой, собирает контекст и обновляет предыдущее представление себя (рис 2.3). Такой подход полностью исключает последовательную обработку, как в RNN, что ускоряет работу нейронной сети и дает возможность обрабатывать каждое слово параллельно.
-
-\newpage
-\subsection{}
-
-Каждый входной токен в self-attention получает три представления, соответствующие ролям, которые он может играть:
-\begin{itemize}
-    \item query - запрашивает информацию;
-    \item key - показывает, какая информация есть у него;
-    \item value - дает запрашиваемую информацию;
-\end{itemize}
-
-От слова, которое мы сейчас подаем на вход (центральное), требуется query вектор, этим вектором мы запрашиваем у других информацию о текущем слове в данном контексте. От каждого другого слова нам будет нужен вектор key, который показывает, какую информацию данное слово может сказать о смысле центрального слова, а также вектор value, из которого мы и получим нужную нам информацию.
-
-Получив информацию от каждого вектора, мы подаем это на вход softmax функции и получаем итоговый эмбеддинг центрального слова.
-На рисунке нижен представлен полный алгоритм взаимодействия Q, K, V в self-attention механизме.
-
-\newpage
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/transformer/query-key-value.png}
-    \caption{Query, Key, Value в self-attention механизма}
-\end{figure}
-
-Формула для вычисления выходных данных внимания следующая:
-
-\begin{center}
-    $Attention(q, k, v) = softmax(\frac{q \cdot k^T}{\sqrt{d_k}}) \cdot v $
-\end{center}
-
-\subsection{Masked self-attention}
-
-Для энкодера и декодера используются разные способы получения токенов, если энкодер получает все токены сразу и каждый токен может смотреть на любой другой токен во входном предложении, в декодере, мы генерируем по одному токену за раз: во время генерации мы не знаем, какие токены мы будем генерировать в дальше.
-Чтобы запретить декодеру заглядывать вперед, модель использует masked-self attention, который видит токены, только стоящие до него во входной последовательности.
-
-Работа masked self-attention отличается во время обучения и инференса модели. Во время второго декодер не заглядывает вперед - так как, мы не знаем, что будет дальше. Но при обучении используются уже известные нам данные. Поэтому при обучении на вход декодеру подется все целевое предложение целиком - без масок.
-
-На рисунке нижне приведен алгоритм работы masked self-attention механизма.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.9]{img/transformer/masked self-attention.png}
-    \caption{Схема работы masked Self-attention механизма}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/transformer/multi-head.png}
-    \caption{Схема Multi-head attention}
-\end{figure}
-
-\subsection{Multi-Head Attention}
-
-Обычно понимание роли слова в предложении требует понимания того, как оно связано с разными частями предложения. Это важно не только при обработке исходного предложения, но и при генерации целевого.
-Поэтому мы должны позволить модели сосредоточиться на разных вещах: для этого сделали multi-head attention. Вместо одного attention механизма multi-head attention имеет несколько «голов», которые работают независимо.
-
-\begin{center}
-    $MultiHead(Q, K, V) = Concat(head_{1}, head_{2}, \dots, head_{n})$ \\
-    $head_{i} = Attention(QW^{i}_{Q}, KW^{i}_{K}, VW^{i}_{V})$
-\end{center}
-
-Формально это реализовано в виде нескольких механизмов внимания, результаты которых объединяются. (рис 2.6)
-
-\newpage
-\section{Трансформер: Архитектура модель}
-
-Трансформер - это модель, основанная только на механизме винмания и оказавшая огромное влияние на NLP в частности и машинном обучении в целом. Впервые представленная в статье Attention is All You Need\cite{allyouneed:2017} в 2017 году.
-Модель сразу показала лучшие результаты в задаче перевода, в сравнении с encoder-decoder модели.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.2]{img/transformer/transformer.png}
-    \caption{Схема архитектуры Траснформер}
-\end{figure}
-
-Трансформер состоит из частей, которое ранне описывались. Encoder состоит из multi-head self-attention механизмов и генерирует представление слов, а decoder из masked self-attention механизма, который уже генерирует новую последовательность. Это происходит в несколько слоев, обычно 6.
-
-Теперь рассмотрими другие составляющие архитекутры:\\
-
-
-\subsection{Feed forward and Add $\&$ Norm}
-
-Кроме блоков внимания, в Трансформере также присутствуют feed forward слои, которые состоят из линейного слоя и фукнции активации ReLU.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/transformer/feed_forward.png}
-    \caption{Feed-forward слой}
-\end{figure}
-
-Вторым важным слоем является LayerNorm, которой независимо нормализует векторное представление каждой последовательности в батче. В Трансформере нормализуются векторное представление каждого токена. Кроме того, LayerNorm имеет обучаемые параметры, $scale$ и $bias$, которые используются после нормализации для масштабирования выходных данных слоя.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/transformer/layer_norm.png}
-    \caption{LayerNorm слой}
-\end{figure}
-
-На рис 2.8 стоит обратить внимание на то, что $\mu_{k}$ и $\sigma_{k}$ оцениваются для каждой последовательности, в отличии от $scale$ и $bias$, которые являются параметрами слоя.
-
-
-\subsection{Positional encoding}
-
-Поскольку Transformer не знает порядок входных токенов, т.к все токены обрабатываются одновременно, поэтому мы должны явно показать модели положения токенов. Для этого у нас есть два набора вложений: для самихтокенов и для их позиций. Тогда входное представление токена является сумма двух вложений.
-Positional encodings можно обучить, но авторы оригинальной статьи обнаружили, что наличие исправленных вложений не ухудшает качество модели. Итоговая формула для позиционные вложения выглядят так:
-\begin{center}
-    $PE_{pos,2i} = \sin(pos/10000^{2i/d_{model}})$, \\
-    $PE_{pos,2i+1} = \cos(pos/10000^{2i/d_{model}})$, \\
-\end{center}
-
-где $pos$ это позиция и $i$ является векторным измерением. Каждое измерение позиционного кодирования соответствует синусоиде, а длины волн образуют геометрическую прогрессию от $2\pi$ до 10000 $\cdot 2\pi$.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/transformer/pos_encoding.png}
-    \caption{Positional encoding}
-\end{figure}
-
-
-\subsection{Residual connection}
-
-Как и в сверточных сетях, в Трансформере применяется residual connections. Смысл residual connection очень прост, добавляет входные данные к выходным данным модели, но в то же время это очень полезная вещь: он борется с проблемой затухания градиента по сети и позволяют использовать много слоев.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.9]{img/transformer/res_block.png}
-    \caption{Residual connection}
-\end{figure}
-
-В трансформаторе остаточные соединения используются после каждого блока внимания и полносвязного блока.
-
-\newpage
-
-\section{Модель RoBERTa}
 
 
 
