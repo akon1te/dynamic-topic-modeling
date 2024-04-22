@@ -79,8 +79,8 @@
 \NewBibliographyString{fromjapanese}
 
 \newcommand{\putbibliography}{
-	\chapter**{Библиографический список}
-	\addcontentsline{toc}{chapter}{Библиографический список}
+	\chapter**{References}
+	\addcontentsline{toc}{chapter}{References}
 
 	\printbibliography[env=gostbibliography,heading=none] %title={Библиографический список},
 }
@@ -208,8 +208,8 @@
 
 	{
 		FEDERAL STATE AUTONOMOUS EDUCATIONAL INSTITUTION \\
-		FOR HIGHER PROFESSIONAL EDUCATION \\
-		NATIONAL RESEARCH UNIVERSITY HIGHER SCHOOL OF ECONOMICS \\
+		HIGHER EDUCATION NATIONAL RESEARCH UNIVERSITY \\
+		«HIGHER SCHOOL OF ECONOMICS» \\
 	}
 
 	\vfill
@@ -231,7 +231,7 @@
 
 	\vfill
 
-	студента образовательной программы <<\@specName>> \\
+	program of preparation of bachelors in the direction <<\@specName>> \\
 
 	\vfill
 	\vfill

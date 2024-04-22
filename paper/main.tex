@@ -3,11 +3,9 @@
 
 \title{Dynamic Topic Modeling for Voice Dialogues}
 \author{Miakov Timofey Ilich}
-\supervisor{Professor NRU HSE - Nizhniy Novgorodw}{L.V. Savchenko }
+\supervisor{Professor NRU HSE - Nizhniy Novgorod}{L.V. Savchenko}
 \Year{2024}
-\Abstract{
-
-}
+\Abstract{}
 
 \bibliography{library.bib}
 
@@ -16,9 +14,14 @@
 
 \chapter{Introduction}
 
+
+
 \section{Relevance of the topic}
 
+
+
 \section{Research Objectives}
+
 The objectives of the thesis work are:
 \begin{enumerate}
     \item Research of existing solutions for dynamic text and dialogue topic modelling
@@ -85,7 +88,6 @@ To avoid this problem, Masked Self-Attention is used, which masks tokens that fo
 
 \subsection{Multi-head attention}
 
-
 To cover more information and dependencies, the authors propose the use of multiple levels of attention in parallel and the summarisation of the values obtained. 
 This is referred to as Multi-head attention. The figure below illustrates what a multi-head approach looks like:
 
@@ -113,6 +115,10 @@ In addition, LayerNorm has trainable parameters, $scale$ and $bias$, which are u
     \includegraphics[scale=1]{img/layer_norm.png}
     \caption{LayerNorm слой}
 \end{figure}
+
+\subsection{LayerNorm}
+
+%do it
 
 \subsection{Positional encodings and Rotary embedding}
 
@@ -144,6 +150,7 @@ Calculating the inner products of rotated queries $W_Q$ and keys $W_K$ results i
 \end{figure}
 
 \section{BERT}
+\subsection{Model overview}
 
 The BERT is a language model based on the transformer architecture, that was first introduced in the article BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding\cite{bert:2018}.  
 From an architectural point of view, BERT consists of 12 encoder blocks, including a Self-Attention mechanism, Normalization and Feed-forward layers.
@@ -172,13 +179,13 @@ During training the model gets as input pairs of sentences and it learns to pred
 The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.
 
 
-\section{Large Language models}
+\section{Large Language Model Meta AI}
 
 
-\subsection{LLaMA}
+\section{Mistral LLM}
 
 
-\subsection{Mistral}
+
 
 
 
@@ -186,12 +193,12 @@ The pipeline of dynamic thematic modelling of audio dialogues, which will be con
 These include audio-to-text, dialogue segmentation, topic extraction, and topic evolution. 
 The approaches and algorithms used in these stages will be described in detail from a theoretical point of view.
 
-
 \section{Automatic Speech Recognition Stage}
 
 
 \section{Dialogue Segmentation Stage}
 
+\subsection{Utterance-Pair Coherence Scoring approach}
 The dialogue segmentation stage represents the initial stage for textual type of data. 
 The result is a set of utterance indices that indicate the beginning of a thematically related group. 
 
@@ -211,7 +218,7 @@ where the symbols $[CLS]$ and $[SEP]$ represent special tokens in BERT.
 In order to indicate the thematic similarity of two statements in a dialogue, the $[CLS]$ token is employed, which performs a similar role in the usual BERT. 
 The resulting value is subjected to a linear dictionary and a final similarity value is obtained, which is then utilised to calculate Coherence scores.
 
-\subsection{Depth Scores calculation}
+\subsection{Depth Scores}
 
 With the help of a fine-tuned BERT (the training algorithm is described above) coherence scores $c_i$, where $i \in [0, n - 1]$ are calculate. According to texttiling algorithm description $c_i$ indicates the topical relatedness of the two adjacent utterances.
 The model uses the obtained values as base values, but processes them for final predictions and gets Depth scores $ds_i$, where $i \in [0, n - 1]$  - measuring the sharpness of a valley.
@@ -252,14 +259,14 @@ A lower score means predictions are closer to the actual boundaries.
 \subsection{PromptTopic}
 
 
+\subsection{LLM for topic extraction}
+
 \subsection{Stage Evaluation}
 As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
 \begin{itemize}
     \item \textbf{Topic diversity} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
     \item \textbf{Topic coherence} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
     \end{itemize}
-
-\subsection{LLM for topic extraction}
 
 
 \section{Topic Evolution over time}
@@ -275,17 +282,29 @@ As for the quality evaluation of the extracted topics, we will use two metrics: 
 The experiments will be divided into stages, with each stage accompanied by a description of the stage and the algorithms used. 
 This description is included in the theoretical part of the work.
 
+\subsection{Experiments settings}
+
+
+
 \subsection{ASR experiments}
 
 
 
 \subsection{Text clustering}
 
+The input data at this stage are dialogues divided into separate utterances of the participants ${ut_1, ut_2, \dots, ut_n}$.
+
 
 
 \subsection{Topic extraction}
 
 
+\subsection{Topic Evolution}
+
+\chapter{Limitations}
+
+The LLM and other models require a significant amount of computing resources, including GPUs. Due to the limited availability of resources, the models were not larger than 8 billion parameters and did not exceed 16 GB during training and inference at all stages. 
+Additionally, due to the lack of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT 4 or Lama 80b), the experimental results would be considerably more favourable.
 
 \chapter{Conclusion}
 
