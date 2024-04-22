@@ -21,12 +21,12 @@
 \section{Research Objectives}
 The objectives of the thesis work are:
 \begin{enumerate}
-    \item A review of existing approaches to dynamic text and dialogue topic modelling
+    \item Research of existing solutions for dynamic text and dialogue topic modelling
     \item The definition of the main stages for DTM for audio dialogues
     \item The identification of suitable training data sets and their collection
     \item An exploration of the possibilities of using large language models for some stages and the selection of models suitable for training in limited resources
     \item The development of the architecture of all stages and their interconnections
-    \item The identification of key indicators to assess the quality of each stage is also required
+    \item Selection of appropriate metrics and measurement of the quality of the approaches used at each stage
     \item Visual analysis of the pipeline operation on pre-selected audio data
 \end{enumerate}
 
@@ -35,19 +35,15 @@ The objectives of the thesis work are:
 
 \section{Transformer architecture}
 
-Prior to 2017 (the publication of the original Transformer article), the main approach to working with sequences was to use Recurrent Neural Networks (RNN). However, this approach has several well-known drawbacks:
+The main architecture for working with text was Recurrent Neural Networks. However, this approach has several well-known disadvantages:
 
-First, RNN hold all information about the sequence in a hidden state that is updated with each step. 
-If the model needs to "remember" something that happened hundreds of steps ago, that information must be stored in a hidden state and not replaced with something new. 
-Therefore, you either have to have a very large hidden state, or accept the loss of information.
+First of all, RN processes tokens and updates the hidden state sequentially, with this approach, the model begins to forget what happened before or it has to have a huge hidden state.
+Secondly, it is very difficult to start distributed training of recurrent networks, because the hidden state at each step must be considered separately.
 
-Second, training recurrent networks is difficult to parallelize: to get the hidden state of the RNN layer for step $i$, you have to compute the state for step $i - 1$.
+In order to avoid the issues previously outlined, the article "Attention is all you need" \cite{attention:2017} presented the Transformer architecture and its principal component, 
+the Attention Mechanism. The objective of this methodology is to permit the elements of the sequence to be accessed at any time, thereby reducing the loss of information.
 
-Both problems make it difficult to apply RNN to really long sequences: even if you wait until the end of training, your model will somehow lose information about what was at the beginning of the text. 
-It is necessary to have method to "read" the sequence so that at any point in time it is possible to refer to an arbitrary point in the past in constant time and without loss of information. 
-This is the self-attention mechanism underlying Transformer, introduced in "Attention is all you need" paper.
-
-\subsection{Self-attention}
+\subsection{Self-attention mechanism}
 
 Self-attention represents a key component of the model in which tokens' information interact with each other.
 At each stage of the encoder, tokens exchange information with one another, gather contextual data, and refine their previous representations (Figure 2.3). 
@@ -61,18 +57,19 @@ For each input token trainable projections $W_Q$, $W_K$, $W_V$ obtained three re
 
 Next are the attention weights that will be applied to the values from which the important information will be extracted:
 \begin{center}
-    $Weights_{i} = softmax(\frac{q_i \cdot k_{1}^T}{C}, \frac{q_i \cdot k_{2}^T}{C}, \dots)$,
+    $Attn_Weights_{i} = softmax(\frac{q_i \cdot k_{1}^T}{C}, \frac{q_i \cdot k_{2}^T}{C}, \dots)$,
 \end{center}
 
-where $C$ is some normalization constant, $\sqrt[]{d}$ of the dimension of keys and values was taken as a normalization constant. 
+where $C$ is some normalization constant.
 
-The output of the self-attention layer is a weighted sum of values with coefficients in the form of attention weights. In vectorized form, you can write:
+The Self-Attention result is a weighted sum of Values with coefficients in the form of attention weights. In vectorized form, you can write:
 
 \begin{center}
     $Attention(q, k, v) = softmax(\frac{Q \cdot K^T}{\sqrt{d_k}}) \cdot V $
 \end{center}
+where $\sqrt[]{d}$ constant of the dimension of $K$ and $V$. 
 
-The figure below shows the complete algorithm for the interaction of Q, K, V in the self-attention mechanism.
+The figure below shows the complete algorithm for the interaction of Q, K, V.
 
 \begin{figure}[h]
     \centering
@@ -82,15 +79,15 @@ The figure below shows the complete algorithm for the interaction of Q, K, V in 
 
 In the decodert part the structure of the attention mechanism is different. 
 They use Masked self-attention. In the form of attention described above, each token will "look" at the entire sequence, which is undesirable for the decoder. 
-Indeed, in the generation stage, we will generate one token per step, and access to subsequent steps in the training stage will lead to information leakage in the decoder and poor model quality. 
-To avoid this problem, you need to apply an autoregressive mask when training attention, by manually adjusting the
-weights for future tokens before softmax, so that their probabilities become zero after softmax. As you can see in the image below (source), this mask has a lower triangular appearance.
+
+In the decoder, the generation of tokens occurs sequentially. If the attention mechanism has access to all tokens, not just those already used, this will result in information leakage in the decoder at the training stage and a reduction in the quality of the model.
+To avoid this problem, Masked Self-Attention is used, which masks tokens that follow the current one and reduces their probability in the softmax function to 0.
 
 \subsection{Multi-head attention}
 
-One set of $Q, K, V$ can reflect only one type of dependency between tokens, and matrices extract only a limited amount of information from input representations. 
-To compensate for this suboptimality, the authors of the architecture proposed an approach with multiple "heads" of attention (multi-head attention): 
-in fact, instead of one layer of attention, we use several parallel ones with different weights, and then aggregate the results. The figure below shows what multi-head attention looks like:
+
+To cover more information and dependencies, the authors propose the use of multiple levels of attention in parallel and the summarisation of the values obtained. 
+This is referred to as Multi-head attention. The figure below illustrates what a multi-head approach looks like:
 
 \begin{figure}[h]
     \centering
@@ -98,17 +95,18 @@ in fact, instead of one layer of attention, we use several parallel ones with di
     \caption{Query, Key, Value in Self-Attention mechanism}
 \end{figure}
 
-\subsection{Feed forward and Add \& Norm}
+\subsection{Feed Forward Network}
 
-In addition to the attention blocks, the Transformer also contains feed-forward layers consisting of a linear layer and a ReLU activation function.
-The FFN layer can be expressed as follows: \\
-$FFN(x) = act(xW_{1} + b_{1}) \dot W_{2} + b_{2}$,
+Transformer block also contains feed-forward network consisting of a linear layer and a activation function.
+The FFN layer can be expressed as follows:
+\begin{center}
+    $FFN(x) = act(x \dot W_{1} + b_{1}) \dot W_{2} + b_{2}$, \\    
+\end{center}
+where $act$ is the activation function such as ReLU = $\max(0, x)$ or more contemporary GELU = $x\Phi(x)$.
 
-Intermediate activations in FFN are different: it all started with the well-known ReLU, but at some point the community switched to GELU (Gaussian Error Linear Unit) with a formula $x\Phi(x)$, where $\Phi$ - is the distribution function of a standard normal random variable
-\\
-
-The second important layer is LayerNorm, which independently normalizes the vector representation of each sequence in the batch. 
-The vector representation of each token is normalized in the Transformer. In addition, LayerNorm has trainable parameters, $scale$ and $bias$, which are used after normalization to scale the output of the layer.
+In terms of LayerNorm, it is normalizes the vector representation of each sequence in the batch. 
+The vector representation of each token is normalized in the Transformer. 
+In addition, LayerNorm has trainable parameters, $scale$ and $bias$, which are used after normalization to scale the output of the layer.
 
 \begin{figure}[h]
     \centering
@@ -116,20 +114,17 @@ The vector representation of each token is normalized in the Transformer. In add
     \caption{LayerNorm слой}
 \end{figure}
 
-In Figure 2.8, note that $\mu_{k}$ and $\sigma_{k}$ are evaluated for each sequence, unlike $scale$ and $bias$, which are layer parameters.
+\subsection{Positional encodings and Rotary embedding}
 
-\subsection{Positional encoding}
-
-Since the model does not know the order of the input tokens, because all tokens are processed simultaneously, therefore we must explicitly show the model the position of the tokens. 
-To do this, we have two sets of attachments: for the tokens themselves and for their positions. 
-Then the input representation of the token is the sum of the two attachments.
-Positional encodings can be trained, but the authors of the original article found that the presence of corrected attachments does not degrade the quality of the model. The final formula for positional embeddings looks like this:
-
+A sequence of tokens is fed into the model, but the model itself does not understand in which order the tokens are located. 
+Therefore, positional embeddings are added to the tokens, which are designed to show the model the input order of the elements.
+Positional embeddings are given by formulas:
 \begin{center}
-    $PE_{pos,2i} = \sin(pos/10000^{2i/d_{model}})$, \\
-    $PE_{pos,2i+1} = \cos(pos/10000^{2i/d_{model}})$, \\
+    $PE_{position, 2i} = \sin(\frac{position}{10000^{2i/d_{model}}})$, \\
+    $PE_{position, 2i+1} = \cos(\frac{position}{10000^{2i/d_{model}}})$, \\
 \end{center}
-where $pos$ is a position and $i$ is a vector dimension. Each measure of position encoding corresponds to a sine wave, and the wavelengths form a geometric progression from $2\pi$ to 10,000$\cdot 2\pi$.
+
+Each measure of position encoding corresponds to a sin wave, and the wavelengths form a geometric progression from $2\pi$ to 10,000$\cdot 2\pi$.
 
 \begin{figure}[h]
     \centering
@@ -138,8 +133,9 @@ where $pos$ is a position and $i$ is a vector dimension. Each measure of positio
 \end{figure}
 
 A newer version of positional encoding is rotary embeddings.
-Rotary Position Embedding, or RoPE, is a type of position embedding that encodes absolute position information with a rotation matrix and naturally incorporates explicit relative position dependency into the self-attention formulation. 
-In particular, RoPE has valuable properties such as the flexibility to be extended to arbitrary sequence lengths, decaying inter-token dependency with increasing relative distances, and the ability to augment linear self-attention with relative position encoding. 
+Rotary position embedding represents a distinct approach to incorporating relative position information into the attention matrix. 
+This approach differs from other approaches in that it first multiplies queries and keys with a rotation matrix. This rotation matrix is a function of absolute position. 
+Calculating the inner products of rotated queries $W_Q$ and keys $W_K$ results in an attention matrix that is a function of relative position information only.
 
 \begin{figure}[h]
     \centering
@@ -159,7 +155,7 @@ From an architectural point of view, BERT consists of 12 encoder blocks, includi
 \end{figure}
 
 
-\subsection[short]{Training tasks}
+\subsection{Training tasks}
 BERT has two pretrain objective described in article: \\
 The first objective of the training process is the masked language modelling (MLM). 
 During the training phase of MLM, the following occurs:
@@ -170,7 +166,7 @@ During the training phase of MLM, the following occurs:
     \item The model must predict the original token.
 \end{itemize}
 
-Secondly, Next Sentence Prediction (NSP) task is a binary classification task. 
+Secondly, Next Sentence Prediction (NSP) pretraining task is a binary classification task. 
 In order to understand relationship between two sentences, BERT training process also uses next sentence prediction.
 During training the model gets as input pairs of sentences and it learns to predict if the second sentence is the next sentence in the original text as well. 
 The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.
@@ -203,39 +199,65 @@ In accordance with the majority of previous studies, we have utilise the best op
 It is algorithm from Improving Unsupervised Dialogue Topic Segmentation with Utterance-Pair Coherence Scoring by Linzi Xing and Giuseppe Carenini (2020)
 Let us now examine the algorithm in greater detail. 
 
-In terms of our approach to topic segmentation, authors utilise Next Sentence Prediction (NSP) BERT as the encoder, due to the similarity of these two tasks. 
-Both tasks take a pair of sentences/utterances as input, with the objective of predicting the appropriate next sentence, which should be topically related. 
+In terms of our approach to topic segmentation, authors utilise Next Sentence Prediction (NSP) BERT as the encoder, due to the similar type of task. 
+Input of both tasks an utterances, with the objective of predicting the appropriate next sentence, which should be topically related. 
 
-In more detail, the positive instances $(s_{i}, s_{t+i})$ and negative instances $(s_{i}, s_{t-i})$ are fed into the model in the form of the following sequence: 
+In more detail, the positive instances $(s_{i}, s_{t+i})$ and negative instances $(s_{i}, s_{t-i})$ use in the model's fine-tuning stage  in the form described below: 
 \begin{center}
     $[CLS] s_{i} [SEP] s_{t+/-i} [SEP]$,
 \end{center}
 where the symbols $[CLS]$ and $[SEP]$ represent special tokens in BERT. 
 
-Here, the contextualised representation of $[CLS]$ is employed as the topic-aware embedding to predict the degree of matching between the two input utterances in terms of topic. 
-The topic coherence scores are estimated by passing the $[CLS]$ representation through another MLP.
-
+In order to indicate the thematic similarity of two statements in a dialogue, the $[CLS]$ token is employed, which performs a similar role in the usual BERT. 
+The resulting value is subjected to a linear dictionary and a final similarity value is obtained, which is then utilised to calculate Coherence scores.
 
 \subsection{Depth Scores calculation}
 
-The input of stage is a set of utterances $\{u1, u2, ..., uk\}$. 
-Subsequently, an utterance-pair coherence scoring model is applied to $k - 1$ consecutive pairs, resulting in a sequence of coherence scores $\{c1, c2, ..., ck-1\}$. 
-The value of $c_i \in [0, 1]$ indicates the topical relatedness of the two utterances in the $i_th$ pair. 
-The algorithm utilises coherence scores as a foundation idea, yet enhances them through the sequence of "depth scores". $\{dp1, dp2, ..., dpk-1\}$ is calculated to measure the sharpness of a valley. 
-This is achieved by examining the highest coherence scores $h_l(i)$ and $h_r(i)$ on either side of interval $i$.
+With the help of a fine-tuned BERT (the training algorithm is described above) coherence scores $c_i$, where $i \in [0, n - 1]$ are calculate. According to texttiling algorithm description $c_i$ indicates the topical relatedness of the two adjacent utterances.
+The model uses the obtained values as base values, but processes them for final predictions and gets Depth scores $ds_i$, where $i \in [0, n - 1]$  - measuring the sharpness of a valley.
 
-The depth score for interval $i$, $dp_i$, is calculated as follows: 
+The depth score is calculated as shows below: 
 \begin{center}
-    $D_{pi} = \frac{h_{l}(i) + h_{r}(i) - 2 \cdot c_{i}}{2}$. 
+    $D_{pi} = \frac{h_{l}(i) + h_{r}(i) - 2 \cdot c_{i}}{2}$,
 \end{center}
+where $h_{l}, h_{r}$ - the highest cs for $i$ pair in choosen range.
 
-A higher depth score indicates a lower topical relatedness between the pair of utterances. 
-The threshold $\tau$, which is used to identify segment boundaries, is computed from the mean $\mu$ and standard deviation $\sigma$ of depth scores: $\tau = \mu - \frac{\sigma}{2}$. 
-A pair of utterances with a depth score exceeding $\tau$ will be selected to have a segment boundary between them. 
+The greater the depth score between two statements, the less likely it is that they share a thematic relationship. 
+To identify the pairs along which the boundaries of the thematic segments lie, the threshold value is calculated as follows: $threshold = \mu - \frac{\sigma}{2}$, where $\mu$ is the average value and $\sigma$ is the standard deviation. Pairs with a depth score above the $threshold$ value will be choosen as boundaries.
 
+\subsection{Stage Evaluation}
+
+After defining the basic segmentation algorithm, it is worth talking about evaluation metrics for this stage:
+\begin{itemize}
+    \item \textbf{F1}\\
+    Given that this is a binary classification problem, it is tempting to use Precision and Recall, and their combination $F_{\beta}$ score as an evaluation metric. \\ 
+     - Metric is defined as the boundaries ratio identified as true boundaries; \\
+       $Precision = \frac{true \: positive}{true \: positive + false \: positive}$ \\
+     - Recall is defined as the true boundaries ratio identified by the model. \\
+       $Recall = \frac{true \: positive}{true \: positive + false \: negative}$ \\
+    $F_{\beta}$ score is defined as the weighted harmonic mean of precision and recall: \\
+    $F_{\beta} = (1 + \beta^{2}) \cdot \frac{precision \cdot recall}{(\beta^{2} \cdot precision) + recall}$
+    \item \textbf{Pk score} is calculated using a sliding window-based method. The window size is typically set to half of the average true segment number. As the window is slide, the algorithm determines whether the two ends of the window are in the same or different segments in the ground truth segmentation. If there is a mismatch, the algorithm increases a counter. The final score is calculated by scaling the penalty between 0 and 1 and dividing the number of measurements.
+    \item \textbf{WindowDiff} is also calculated by a sliding window. In this case, for each position of the window of size k, we simply compare the number of boundaries in the ground truth with the number of boundaries predicted by the Topic Segmentation model.\\
+    $WD(pred, true) = \frac{1}{N - k}\sum_{i = 1}^{N - k}(\left\lvert b (true_{i}, true_{i + k}) - b(pred_{i}, pred_{i + k}) \right\rvert > 0)$, \\ 
+    where $b(i, j)$ represents the number of boundaries between two positions $i$ and $j$ in the text, $N$ represents the number of sentences in the text.
+\end{itemize} 
+
+In practice, both $Pk$ and $WindowDiff$ scores are used to evaluate a model. 
+A lower score means predictions are closer to the actual boundaries.
 
 \section{Topic Extraction Stage}
 
+
+\subsection{PromptTopic}
+
+
+\subsection{Stage Evaluation}
+As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
+\begin{itemize}
+    \item \textbf{Topic diversity} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
+    \item \textbf{Topic coherence} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
+    \end{itemize}
 
 \subsection{LLM for topic extraction}
 
@@ -250,127 +272,24 @@ A pair of utterances with a depth score exceeding $\tau$ will be selected to hav
 \newpage
 \chapter{Experiments}
 
-Основной задачей в работе будет классификация видео на наличие юмора с использованием разных моделей для разных модальностей.
-Для работы с разными модальностями будут использованы 3 модели, которые были описаны в теоретической части:
-\begin{itemize}
-    \item Wave2Vec - извлечение аудио признаков,
-    \item BERT - извлечение текстовых признаков,
-    \item TimeSFormer - извлечение признаков из видео фрагментов,
-\end{itemize}
+The experiments will be divided into stages, with each stage accompanied by a description of the stage and the algorithms used. 
+This description is included in the theoretical part of the work.
 
-Сначала модели попробуют предсказать классы в своих модальностях, после чего их предсказания будут обработаны вместе для улучшения результатов.
-
-\section{Классификация по одной модальности}
-
-Для извлечения признаков, как уже было описано, будут использоваться 3 различные модели. В силу ограниченных вычислительных мощностей, будут взяты предобученные модели с \href{https://huggingface.co/}{Hugging Face} и дообучены на наших данных.
-
-Так как у нас ровное кол-во наблюдений положительного и отрицательного классов, делим выборку 70\% на дообучение и 30\% валидацию с одинаковым кол-вом примеров разных классов в обеих подвыборках.
-
-Для каждой модели начала посчитаем качество модели по 3 метрикам: Accuracy (из-за отличной балансировки, можем использовать обычную accuracy), Precision, Recall.
-
-\begin{itemize}
-    \item Для работы с текстом будем использовать RoBERTa из библиотеки моделей HuggingFace: \href{https://huggingface.co/roberta-base}{roberta-base}.
-    \item Для работы с аудио будем использовать Wave2vec2 из библиотеки моделей HuggingFace: \href{https://huggingface.co/facebook/wav2vec2-base}{wav2vec2-base}.
-    \item Для работы с видео будем использовать Wave2vec2 из библиотеки моделей HuggingFace: \href{https://huggingface.co/facebook/timesformer-base-finetuned-k400}{timesformer-base}.
-\end{itemize}
-
-С помощью предлагаемых Hugging Face интрументов, сделаем дообучение моделей под нашу задачу. \\
-
-\subsection{Результаты}
-
-\textbf{Далее в таблицах с результатами модальности будут называться в сокращенном виде: Текст - Т, Аудио - А, Видео - В.} \\
-
-Результаты классификации по одной модальности: \\
-
-\begin{center}
-    \begin{tabular}{ |c||c|c|c|}
-        \hline
-        \multicolumn{4}{|c|}{Классификация по тексту} \\
-        \hline
-        Модальность & Accuracy & Precision & Recall   \\
-        \hline
-        Т           & 0.71377  & 0.70563   & 0.75064  \\
-        В           & 0.47836  & 0.50600   & 0.59729  \\
-        А           & 0.50885  & 0.57865   & 0.78420  \\
-        \hline
-    \end{tabular} \\
-\end{center}
+\subsection{ASR experiments}
 
 
 
-TimeSFormer показывает достаточно низкие значени метрик, относительно других моделей. Такие результаты связаны со спецификой задачи, моедль не фоксируется только на человеке, но на всем видеофрагменте. Возможным решением станет использование других моделей или инструментов, которые будут обрабатывать именно человека на видео.
-
-Wave2vec показывает хороший recall (т.е модель хорошо угадывает, класс с юмором), но accuracy все еще плохой.
-
-По результатам можем сделать вывод, что самым подходящей для детекции юмора оказалась текстовая модальност, с которой работала RoBERTa. Действительно по тексту легче всего понять, есть ли шутка, потому что не надо обрабатывать много второстепенной информации, как в видео, и "поведение"\ голоса разных людей во время шутки, как на аудио.
-
-\section{Классификация видео с использованием нескольких модальностей}
-
-Теперь попробуем собирать вместе голосование моделей в разных модальностях, сначала будем брать все комбинации 2 модальностей, а потом возьмем 3 модальности.
-
-Подсчет результатов будем производить двумя разными сопобами:
-\begin{itemize}
-    \item Посчитать среднюю вероятность
-    \item Выбирать голосованием, каждой модели за класс
-\end{itemize} \\
-
-\subsection{Результаты}
-
-Результаты экспериментов с подсчетом средней вероятности: \\
-
-\begin{center}
-    \begin{tabular}{ |c||c|c|c| }
-        \hline
-        Модальности & Accuracy & Precision & Recall  \\
-        \hline
-        А + В       & 0.49737  & 0.50512   & 0.60373 \\
-        А + Т       & 0.71377  & 0.70488   & 0.75257 \\
-        В + Т       & 0.63573  & 0.63569   & 0.66559 \\
-        А + В + Т   & 0.63081  & 0.62862   & 0.67074 \\
-        \hline
-    \end{tabular}
-\end{center} \\
-
-В голосованиях в парах и тройке результаты лучше, чем у А и В по одиночке.
-А + Т слегка улучшает результат RoBERTa в одиночку, а в остальных парах и тройке, результаты улучшаются, но не достигают RoBERTa.
-
-
-При спорных ситуациях в голосованием по классам, решающий голос за модальностями с лучшим результатом в прошлой частью (т.е. TimeSFormer имеет самый слабый голос, затем Wave2Vec и самый сильный голос у RoBERTa).
-
-Результаты экспериментов с голосованием по классам: \\
-
-\begin{center}
-    \begin{tabular}{ |c||c|c|c|}
-        \hline
-        Модальности & Accuracy & Precision & Recall  \\
-        \hline
-        А + В       & 0.49737  & 0.50512   & 0.60373 \\
-        А + Т       & 0.71377  & 0.70563   & 0.75064 \\
-        В + Т       & 0.71377  & 0.70563   & 0.75064 \\
-        А + В + Т   & 0.50885  & 0.50885   & 1.0     \\
-        \hline
-    \end{tabular}
-\end{center} \\
-
-Здесь можно заметить, т.к. текст имеет решщающий голос, то в парах с текстом результаты одинаковые.
-В А + В + Т интересно заметить, что recall равен 1.0. Тоесть наша "тройка"\ относит все сэйплы к одному классу.
-
-
-\chapter{Заключение}
-
-В ходе проделанной работы были прочитаны статьи в разделе нейронных сетей, изучен механизм внимания и архитектура Трансформер с теоретической точки зрения. Также изучены модели, в основе которых лежит Трансформер: RoBerta, используемая для работы с текстовой модальностью, Wave2vec2, используемая для работы с звуковой модальностью, и TimeSFromer, используемая для работы с визуальной модальностью.
-
-Далее были проведены эксперименты  на датасете UrFunnny с каждой из моделей. Изучив результаты можно увидеть, что RoBERTa показыает самые хорошие результаты. Предположения, почему получились такие результаты было сделано в пунке 3.1.1 под таблицей с результатами.
-
-Что касается совмещения результатов моделей (голосование по вероятностям и финальным лэйблам), аудио и текст вместе улучшают результат RoBERTa в одиночку.
-
-Для работы с моделями, обучение и инференс, был изучен фрэймворк HuggingFace, имеющий большую популярность в сфере глубокого обучения. Кроме того были использованы язык программирования Python, PyTorch - бекэнд для нейронных сетей, а также вспомогательные библиотеки librosa (работа со звуком) и Numpy.
-
-Следующим шагом в исследовании детекции юмора может стать объединением моделей в одну, на примере CLIP от openAI или улучшение моделей в аудио и видео модальностях.
+\subsection{Text clustering}
 
 
 
+\subsection{Topic extraction}
 
-\putbibliography %Вместо этой команды будет вставлена библиография
+
+
+\chapter{Conclusion}
+
+
+\putbibliography
 
 \end{document}
