@@ -214,7 +214,8 @@
 
 	\vfill
 
-	\textit{\@facultyString}
+	\textit{\@facultyString} \\
+	bachelor programm <<\@specName>> \\
 
 	\vfill
 	\vfill
@@ -230,9 +231,7 @@
 	\textit{\@typeString}
 
 	\vfill
-
-	program of preparation of bachelors in the direction <<\@specName>> \\
-
+	\vfill
 	\vfill
 	\vfill
 	\vfill

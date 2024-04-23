@@ -22,9 +22,9 @@
 
 \section{Research Objectives}
 
-The objectives of the thesis work are:
+The main objectives of the research work:
 \begin{enumerate}
-    \item Research of existing solutions for dynamic text and dialogue topic modelling
+    \item Investigate existing solutions for dynamic text and dialogue topic modelling
     \item The definition of the main stages for DTM for audio dialogues
     \item The identification of suitable training data sets and their collection
     \item An exploration of the possibilities of using large language models for some stages and the selection of models suitable for training in limited resources
@@ -106,8 +106,9 @@ The FFN layer can be expressed as follows:
 \end{center}
 where $act$ is the activation function such as ReLU = $\max(0, x)$ or more contemporary GELU = $x\Phi(x)$.
 
-In terms of LayerNorm, it is normalizes the vector representation of each sequence in the batch. 
-The vector representation of each token is normalized in the Transformer. 
+\subsection{LayerNorm}
+
+In terms of LayerNorm (Figure 2.3), it is normalizes the vector representation of each sequence in the batch. 
 In addition, LayerNorm has trainable parameters, $scale$ and $bias$, which are used after normalization to scale the output of the layer.
 
 \begin{figure}[h]
@@ -116,9 +117,13 @@ In addition, LayerNorm has trainable parameters, $scale$ and $bias$, which are u
     \caption{LayerNorm слой}
 \end{figure}
 
-\subsection{LayerNorm}
-
-%do it
+The application of layer normalisation ensures that all parameters within a given layer exhibit a uniform distribution across all features for a specific input.
+The LayerNorm can be expressed as:
+\begin{center}
+    $y = \frac{x - \mu}{\sqrt{\sigma^{2} + \epsilon}} \odot \gamma + \beta$,
+\end{center}
+where $\mu$ - mean of last D dimension, $\sigma^2$ - variance of last D dimension, $\gamma$ and $\beta$ - learnable params;
+      
 
 \subsection{Positional encodings and Rotary embedding}
 
@@ -138,16 +143,28 @@ Each measure of position encoding corresponds to a sin wave, and the wavelengths
     \caption{Positional encoding}
 \end{figure}
 
-A newer version of positional encoding is rotary embeddings.
+A newer version of positional encoding is Rotary Positional Embeddings.
 Rotary position embedding represents a distinct approach to incorporating relative position information into the attention matrix. 
 This approach differs from other approaches in that it first multiplies queries and keys with a rotation matrix. This rotation matrix is a function of absolute position. 
 Calculating the inner products of rotated queries $W_Q$ and keys $W_K$ results in an attention matrix that is a function of relative position information only.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.7]{img/rotary_embs.png}
-    \caption{Rotary embeddings}
-\end{figure}
+In order to illustrate the concept, we will consider an examples with two features at position $m$.
+\begin{center}
+    $RoPE(x_1, x_2) =   \begin{pmatrix}
+                            \cos m\theta & -\sin m\theta\\
+                            \sin\theta & \cos m\theta
+                        \end{pmatrix} 
+                        \begin{pmatrix}
+                            x_1 \\
+                            x_2
+                        \end{pmatrix} 
+                        \begin{pmatrix}
+                            x_1 \cos m\theta - x_2\sin m\theta\\
+                            x_2 \cos m\theta + x_1\sin m\theta
+                        \end{pmatrix},
+    $
+\end{center}
+where $\theta$ is a constant angle.
 
 \section{BERT}
 \subsection{Model overview}
@@ -179,14 +196,55 @@ During training the model gets as input pairs of sentences and it learns to pred
 The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.
 
 
-\section{Large Language Model Meta AI}
+\section{LLM}
+
+LLM is a type of artificial intelligence(AI) algorithm that use deep learning techniques and massively large data sets to understand, summarize, generate, and predict new content. 
+LLMs are trained with immense amounts of data and use self-supervised learning to predict the next token in a sentence, given the surrounding context. 
+Once an LLM has been trained, it can be fine-tuned for a wide range of NLP tasks, including generating and classifying text, answering questions.
+The following section will examine the main LLMs used in the article.
+
+\subsection{LLaMA}
+
+In July 2023, an open-source collection of models, called LLaMA 2, was released by Mata AI Team. The collection consists of models with 7B and 70B parameters.
+
+In order to create a collection of LLaMA 2 models, the authors employed the architecture of an optimised auto-regressive transformer (Touvron et al.(2023)) with RMSNorm normalisation, Rotary Embeddings and SwiGLU activation function in FFN, but implemented a number of alterations with the intention of enhancing the quality of the model and its performance, such as:
+\begin{itemize}
+    \item Meticulous data preparation
+    \item Larger dataset
+    \item Increased the length of the context in compare with earlier approaches
+    \item Incorporation of grouped-query attention (GQA)
+\end{itemize}   
+
+\textbf{Grouped-query attention} can be thought of as a way to optimize the attention mechanism in transformer-based models. 
+Instead of computing attention for each query independently, GQA groups queries together and computes their attention jointly. This reduces the number of attention computations, leading to faster inference times.
+
+The GQA method has been applied to speed up inference on large language models without significantly sacrificing quality. 
+It's a promising technique for improving the efficiency of transformer models, particularly in the context of generative AI.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=1]{img/gqa.png}
+    \caption{Self-attention and Grouped-query attention}
+\end{figure}
 
 
-\section{Mistral LLM}
+\section{Mistral}
 
+In September 2023, the MistralAI team introduced the Mistral 7B model, which has been designed for high performance and efficiency. 
+In comparison to the 13B Llama 2, the Mistral 7B model has demonstrated superior performance in all benchmarks related to reasoning, mathematics, and code generation. 
+The Mistral 7B model employs grouped-query attention (GQA) for rapid inference and sliding window attention (SWA) for handling long sequences at a reduced cost.
 
-
-
+As other models, Mistral is a transformer based model. However, it differs from the Llama model in several key respects.
+\begin{itemize}
+    \item Sliding Window Attention (SWA): This method allows the model to attend to information beyond a set window size by leveraging the stacked layers of a transformer. 
+    With a window size of 4096, it can attend to around 131K tokens. 
+    \item Rolling Buffer Cache: It is limits the size of the cache using a rolling buffer. The cache has a fixed size, and as new data is added, older data is overwritten once the cache exceeds its size. 
+    This method reduces the memory usage of the cache by 8x for sequences of 32k tokens without compromising the quality of the model.
+    \item In the context of sequence generation, the model employs a process of pre-filling and chunking. 
+    This involves the prediction of tokens in a sequential manner, given that each token is contingent upon the previous one. However, given that the prompts are known in advance, the cache can be pre-filled with them. 
+    In the event that a prompt is of a considerable length, it can be divided into smaller units, with the cache being filled in this manner. 
+    The attention mask operates over both the cache and the chunk
+\end{itemize}
 
 
 The pipeline of dynamic thematic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
@@ -209,7 +267,7 @@ Let us now examine the algorithm in greater detail.
 In terms of our approach to topic segmentation, authors utilise Next Sentence Prediction (NSP) BERT as the encoder, due to the similar type of task. 
 Input of both tasks an utterances, with the objective of predicting the appropriate next sentence, which should be topically related. 
 
-In more detail, the positive instances $(s_{i}, s_{t+i})$ and negative instances $(s_{i}, s_{t-i})$ use in the model's fine-tuning stage  in the form described below: 
+In more detail, the positive instances $(s_{i}, s_{t+i})$ and negative instances $(s_{i}, s_{t-i})$ use in the model's fine-tuning stage in the form described below: 
 \begin{center}
     $[CLS] s_{i} [SEP] s_{t+/-i} [SEP]$,
 \end{center}
