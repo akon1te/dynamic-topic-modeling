@@ -228,7 +228,7 @@ It's a promising technique for improving the efficiency of transformer models, p
 \end{figure}
 
 
-\section{Mistral}
+\subsection{Mistral}
 
 In September 2023, the MistralAI team introduced the Mistral 7B model, which has been designed for high performance and efficiency. 
 In comparison to the 13B Llama 2, the Mistral 7B model has demonstrated superior performance in all benchmarks related to reasoning, mathematics, and code generation. 
@@ -302,10 +302,10 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
        $Recall = \frac{true \: positive}{true \: positive + false \: negative}$ \\
     $F_{\beta}$ score is defined as the weighted harmonic mean of precision and recall: \\
     $F_{\beta} = (1 + \beta^{2}) \cdot \frac{precision \cdot recall}{(\beta^{2} \cdot precision) + recall}$
-    \item \textbf{Pk score} is calculated using a sliding window-based method. The window size is typically set to half of the average true segment number. As the window is slide, the algorithm determines whether the two ends of the window are in the same or different segments in the ground truth segmentation. If there is a mismatch, the algorithm increases a counter. The final score is calculated by scaling the penalty between 0 and 1 and dividing the number of measurements.
-    \item \textbf{WindowDiff} is also calculated by a sliding window. In this case, for each position of the window of size k, we simply compare the number of boundaries in the ground truth with the number of boundaries predicted by the Topic Segmentation model.\\
-    $WD(pred, true) = \frac{1}{N - k}\sum_{i = 1}^{N - k}(\left\lvert b (true_{i}, true_{i + k}) - b(pred_{i}, pred_{i + k}) \right\rvert > 0)$, \\ 
-    where $b(i, j)$ represents the number of boundaries between two positions $i$ and $j$ in the text, $N$ represents the number of sentences in the text.
+    \item \textbf{Pk score} is uses the sliding window method and counts the number of discrepancies between the ends of the predicted segments and the true segments. The final score is the counter divided by the number of measurements. The lower the value, the better.
+    \item In \textbf{WindowDiff} this algorithm, for each position of a sliding window of size k, comparing the number of boundaries in the ground truth with the number of boundaries predicted by the Topic Segmentation model.\\
+    $WD(pred, true) = \frac{1}{N - k}\sum_{i = 1}^{N - k}(\left\lvert bounds(true_{i}, true_{i + k}) - bounds(pred_{i}, pred_{i + k}) \right\rvert > 0)$, \\ 
+    where $bounds(s, s + i)$ represents the number of boundaries between two positions $i$ and $j$ in the text, $N$ represents the number of sentences in the text.
 \end{itemize} 
 
 In practice, both $Pk$ and $WindowDiff$ scores are used to evaluate a model. 
@@ -340,33 +340,61 @@ As for the quality evaluation of the extracted topics, we will use two metrics: 
 The experiments will be divided into stages, with each stage accompanied by a description of the stage and the algorithms used. 
 This description is included in the theoretical part of the work.
 
-\subsection{Experiments settings}
+
+\section{Experiments settings}
 
 
 
-\subsection{ASR experiments}
+\section{ASR experiments}
 
 
 
-\subsection{Text clustering}
+\section{Text clustering}
 
 The input data at this stage are dialogues divided into separate utterances of the participants ${ut_1, ut_2, \dots, ut_n}$.
+At this stage, experiments will be conducted using the encoder model for the Utterance-Coherence Scoring algorithm. 
+In addition, algorithms for the time of model inference will be performed throughout the pipeline to select the fastest solution.
 
 
+\begin{center}
+    \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
+        \hline
+        \multicolumn{2}{| c |}{Country List} & \multicolumn{3}{| c |}{Country List} &  \multicolumn{3}{| c |}{Country List}  \\
+        \hline
+        model & dataset & Pk & wd & f1 & Pk & wd & f1 \\ 
+        \hline
+        bert-base NSP & committee & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & committee & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-large NSP & isci & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & isci & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base NSP & ami & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & ami & Pk & wd & f1 & Pk & wd & f1 \\ 
+        \hline
+    \end{tabular}
+\end{center}
 
-\subsection{Topic extraction}
+\section{Topic extraction}
 
+\begin{center}
+    \begin{tabular}{ |c|c|c| } 
+     \hline
+     model & Pk & wd \\ 
+     \hline
+     bert-base NSP & cell5 & cell6 \\ 
+     bert-base CLS & cell8 & cell9 \\ 
+     \hline
+    \end{tabular}
+\end{center}
 
-\subsection{Topic Evolution}
+\section{Topic Evolution}
 
-\chapter{Limitations}
+\section{Limitations}
 
 The LLM and other models require a significant amount of computing resources, including GPUs. Due to the limited availability of resources, the models were not larger than 8 billion parameters and did not exceed 16 GB during training and inference at all stages. 
-Additionally, due to the lack of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT 4 or Lama 80b), the experimental results would be considerably more favourable.
+Additionally, due to the lack of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT4 or LlaMA2 80b), the experimental results would be considerably more favourable.
 
 \chapter{Conclusion}
 
 
 \putbibliography
-
 \end{document}
