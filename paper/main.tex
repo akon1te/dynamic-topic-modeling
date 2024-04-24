@@ -14,10 +14,27 @@
 
 \chapter{Introduction}
 
+Natural Language Processing (NLP) has emerged as a crucial field in computer science, enabling machines to comprehend and respond to human language in a meaningful way. 
+Among the various tasks within NLP, dialogue understanding, which involves analyzing and interpreting natural language conversations, has gained significant attention. 
+One of the key challenges in dialogue understanding is identifying and tracking different topics discussed throughout the conversation.
+
+Topic modeling is a statistical technique that helps uncover topic structures within textual data. 
+Traditional topic modeling approaches, however, suffer from limitations such as topic drift, where the topics change over time, and the inability to capture dynamic relationships between topics. 
+In order to analyse time-dependent text corpora, the Dynamic Topic Modeling (DTM) approach is utilised, which will be subjected to further investigation in the forthcoming work.
+
+In this paper, we explore current approaches to (DTM) and apply them to text and audio dialogue datasets. 
+Furthermore, we will endeavour to combine several of the most effective open-source methodologies into pipeline from text clustering to topic evolution over time. 
+A significant aspect of our research will be to investigate the potential for integrating Large Language Models into our DTM pipeline, with a view to comparing it with other existing solutions.
+
+The quality and performance of the pipeline will be evaluated using specific metrics at both the overall and stage-specific levels. Following this, a comparison will be made with other existing solutions and models.
+
 
 
 \section{Relevance of the topic}
 
+Dynamic Topic Modeling is a powerful tool for voice dialogue understanding, offering a dynamic and comprehensive representation of the conversation structure. 
+It has the potential to significantly enhance the performance of voice dialogue systems and improve the overall user experience.
+In addition, exploring the possibilities of using large language models, which are now showing significant results in many NLP tasks, can further improve the model.
 
 
 \section{Research Objectives}
@@ -80,16 +97,13 @@ The figure below shows the complete algorithm for the interaction of Q, K, V.
     \caption{Query, Key, Value in Self-Attention mechanism}
 \end{figure}
 
-In the decodert part the structure of the attention mechanism is different. 
-They use Masked self-attention. In the form of attention described above, each token will "look" at the entire sequence, which is undesirable for the decoder. 
-
-In the decoder, the generation of tokens occurs sequentially. If the attention mechanism has access to all tokens, not just those already used, this will result in information leakage in the decoder at the training stage and a reduction in the quality of the model.
-To avoid this problem, Masked Self-Attention is used, which masks tokens that follow the current one and reduces their probability in the softmax function to 0.
+The decoder uses a modified Self-attention mechanism called Masked Self-attention. Because a new sequence is generated in the decoder, the tokens that come after the current one are masked so that the model does not see future tokens and does not rely on information about them. 
+Masking leads to the fact that after softmax in the attention mechanism, the probability of future tokens is zero.
 
 \subsection{Multi-head attention}
 
-To cover more information and dependencies, the authors propose the use of multiple levels of attention in parallel and the summarisation of the values obtained. 
-This is referred to as Multi-head attention. The figure below illustrates what a multi-head approach looks like:
+To cover more information and dependencies, the authors propose Multi-head attention, that use of multiple levels of attention in parallel and the summarisation of the values obtained. 
+The figure below illustrates what a multi-head approach looks like:
 
 \begin{figure}[h]
     \centering
@@ -127,7 +141,7 @@ where $\mu$ - mean of last D dimension, $\sigma^2$ - variance of last D dimensio
 
 \subsection{Positional encodings and Rotary embedding}
 
-A sequence of tokens is fed into the model, but the model itself does not understand in which order the tokens are located. 
+Model itself does not understand in which order the input tokens tokens are located. 
 Therefore, positional embeddings are added to the tokens, which are designed to show the model the input order of the elements.
 Positional embeddings are given by formulas:
 \begin{center}
@@ -143,7 +157,7 @@ Each measure of position encoding corresponds to a sin wave, and the wavelengths
     \caption{Positional encoding}
 \end{figure}
 
-A newer version of positional encoding is Rotary Positional Embeddings.
+A newer version of positional encoding is Rotary Positional Embeddings \cite{rotary:2021}.
 Rotary position embedding represents a distinct approach to incorporating relative position information into the attention matrix. 
 This approach differs from other approaches in that it first multiplies queries and keys with a rotation matrix. This rotation matrix is a function of absolute position. 
 Calculating the inner products of rotated queries $W_Q$ and keys $W_K$ results in an attention matrix that is a function of relative position information only.
@@ -166,8 +180,13 @@ In order to illustrate the concept, we will consider an examples with two featur
 \end{center}
 where $\theta$ is a constant angle.
 
-\section{BERT}
-\subsection{Model overview}
+
+\section{Transformer based models}
+
+Several models based on the Transformer architecture will be required in the work at different stages. 
+More specifically, text clustering will require an encoder for text information based on BERT, and LLM will be used for topic processing.
+
+\subsection{BERT}
 
 The BERT is a language model based on the transformer architecture, that was first introduced in the article BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding\cite{bert:2018}.  
 From an architectural point of view, BERT consists of 12 encoder blocks, including a Self-Attention mechanism, Normalization and Feed-forward layers.
@@ -178,9 +197,7 @@ From an architectural point of view, BERT consists of 12 encoder blocks, includi
     \caption{BERT architecture}
 \end{figure}
 
-
-\subsection{Training tasks}
-BERT has two pretrain objective described in article: \\
+\textbf{BERT has two pretrain objective} described in article: \\
 The first objective of the training process is the masked language modelling (MLM). 
 During the training phase of MLM, the following occurs:
 
@@ -193,19 +210,17 @@ During the training phase of MLM, the following occurs:
 Secondly, Next Sentence Prediction (NSP) pretraining task is a binary classification task. 
 In order to understand relationship between two sentences, BERT training process also uses next sentence prediction.
 During training the model gets as input pairs of sentences and it learns to predict if the second sentence is the next sentence in the original text as well. 
-The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.
+The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.\\
 
-
-\section{LLM}
-
-LLM is a type of artificial intelligence(AI) algorithm that use deep learning techniques and massively large data sets to understand, summarize, generate, and predict new content. 
+\newpage
+\textbf{LLM} is a type of artificial intelligence(AI) algorithm that use deep learning techniques and massively large data sets to understand, summarize, generate, and predict new content. 
 LLMs are trained with immense amounts of data and use self-supervised learning to predict the next token in a sentence, given the surrounding context. 
 Once an LLM has been trained, it can be fine-tuned for a wide range of NLP tasks, including generating and classifying text, answering questions.
 The following section will examine the main LLMs used in the article.
 
 \subsection{LLaMA}
 
-In July 2023, an open-source collection of models, called LLaMA 2, was released by Mata AI Team. The collection consists of models with 7B and 70B parameters.
+In July 2023, an open-source collection of models, called LLaMA2 \cite{llama:2023}, was released by Mata AI Team. The collection consists of models with 7B and 70B parameters.
 
 In order to create a collection of LLaMA 2 models, the authors employed the architecture of an optimised auto-regressive transformer (Touvron et al.(2023)) with RMSNorm normalisation, Rotary Embeddings and SwiGLU activation function in FFN, but implemented a number of alterations with the intention of enhancing the quality of the model and its performance, such as:
 \begin{itemize}
@@ -230,7 +245,7 @@ It's a promising technique for improving the efficiency of transformer models, p
 
 \subsection{Mistral}
 
-In September 2023, the MistralAI team introduced the Mistral 7B model, which has been designed for high performance and efficiency. 
+In September 2023, the MistralAI \cite{mistral:2023} team introduced the Mistral 7B model, which has been designed for high performance and efficiency. 
 In comparison to the 13B Llama 2, the Mistral 7B model has demonstrated superior performance in all benchmarks related to reasoning, mathematics, and code generation. 
 The Mistral 7B model employs grouped-query attention (GQA) for rapid inference and sliding window attention (SWA) for handling long sequences at a reduced cost.
 
@@ -251,18 +266,19 @@ The pipeline of dynamic thematic modelling of audio dialogues, which will be con
 These include audio-to-text, dialogue segmentation, topic extraction, and topic evolution. 
 The approaches and algorithms used in these stages will be described in detail from a theoretical point of view.
 
-\section{Automatic Speech Recognition Stage}
+\section{ASR approach}
 
 
-\section{Dialogue Segmentation Stage}
+\section{Improving Utterance-Pair Coherence Scoring}
 
-\subsection{Utterance-Pair Coherence Scoring approach}
 The dialogue segmentation stage represents the initial stage for textual type of data. 
 The result is a set of utterance indices that indicate the beginning of a thematically related group. 
 
 In accordance with the majority of previous studies, we have utilise the best open-source solution based on the presented in papers metrics. 
 It is algorithm from Improving Unsupervised Dialogue Topic Segmentation with Utterance-Pair Coherence Scoring by Linzi Xing and Giuseppe Carenini (2020)
 Let us now examine the algorithm in greater detail. 
+
+\subsection{BERT for coherence scoring}
 
 In terms of our approach to topic segmentation, authors utilise Next Sentence Prediction (NSP) BERT as the encoder, due to the similar type of task. 
 Input of both tasks an utterances, with the objective of predicting the appropriate next sentence, which should be topically related. 
@@ -290,7 +306,7 @@ where $h_{l}, h_{r}$ - the highest cs for $i$ pair in choosen range.
 The greater the depth score between two statements, the less likely it is that they share a thematic relationship. 
 To identify the pairs along which the boundaries of the thematic segments lie, the threshold value is calculated as follows: $threshold = \mu - \frac{\sigma}{2}$, where $\mu$ is the average value and $\sigma$ is the standard deviation. Pairs with a depth score above the $threshold$ value will be choosen as boundaries.
 
-\subsection{Stage Evaluation}
+\subsection{Evaluation Metrics}
 
 After defining the basic segmentation algorithm, it is worth talking about evaluation metrics for this stage:
 \begin{itemize}
@@ -311,13 +327,11 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
 In practice, both $Pk$ and $WindowDiff$ scores are used to evaluate a model. 
 A lower score means predictions are closer to the actual boundaries.
 
-\section{Topic Extraction Stage}
-
-
-\subsection{PromptTopic}
+\section{PromptTopic}
 
 
 \subsection{LLM for topic extraction}
+
 
 \subsection{Stage Evaluation}
 As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
@@ -325,12 +339,6 @@ As for the quality evaluation of the extracted topics, we will use two metrics: 
     \item \textbf{Topic diversity} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
     \item \textbf{Topic coherence} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
     \end{itemize}
-
-
-\section{Topic Evolution over time}
-
-
-
 
 
 
@@ -391,7 +399,7 @@ In addition, algorithms for the time of model inference will be performed throug
 \section{Limitations}
 
 The LLM and other models require a significant amount of computing resources, including GPUs. Due to the limited availability of resources, the models were not larger than 8 billion parameters and did not exceed 16 GB during training and inference at all stages. 
-Additionally, due to the lack of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT4 or LlaMA2 80b), the experimental results would be considerably more favourable.
+Additionally, because of the absence of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT4 or LlaMA2 80b), the experimental results would be considerably more favourable.
 
 \chapter{Conclusion}
 
