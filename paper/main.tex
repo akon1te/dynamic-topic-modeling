@@ -108,7 +108,7 @@ The figure below illustrates what a multi-head approach looks like:
 \begin{figure}[h]
     \centering
     \includegraphics[scale=0.7]{img/multi-head.png}
-    \caption{Query, Key, Value in Self-Attention mechanism}
+    \caption{Multi-head Attention mechanism}
 \end{figure}
 
 \subsection{Feed Forward Network}
@@ -275,7 +275,7 @@ The dialogue segmentation stage represents the initial stage for textual type of
 The result is a set of utterance indices that indicate the beginning of a thematically related group. 
 
 In accordance with the majority of previous studies, we have utilise the best open-source solution based on the presented in papers metrics. 
-It is algorithm from Improving Unsupervised Dialogue Topic Segmentation with Utterance-Pair Coherence Scoring by Linzi Xing and Giuseppe Carenini (2020)
+It is algorithm from Improving Unsupervised Dialogue Topic Segmentation with Utterance-Pair Coherence Scoring \cite{depthscore:2021} 
 Let us now examine the algorithm in greater detail. 
 
 \subsection{BERT for coherence scoring}
@@ -318,14 +318,12 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
        $Recall = \frac{true \: positive}{true \: positive + false \: negative}$ \\
     $F_{\beta}$ score is defined as the weighted harmonic mean of precision and recall: \\
     $F_{\beta} = (1 + \beta^{2}) \cdot \frac{precision \cdot recall}{(\beta^{2} \cdot precision) + recall}$
-    \item \textbf{Pk score} is uses the sliding window method and counts the number of discrepancies between the ends of the predicted segments and the true segments. The final score is the counter divided by the number of measurements. The lower the value, the better.
-    \item In \textbf{WindowDiff} this algorithm, for each position of a sliding window of size k, comparing the number of boundaries in the ground truth with the number of boundaries predicted by the Topic Segmentation model.\\
+    \item \textbf{Pk score} \cite{pk:1999} is uses the sliding window method and counts the number of discrepancies between the ends of the predicted segments and the true segments. The final score is the counter divided by the number of measurements. The lower the value, the better.
+    \item In \textbf{WindowDiff} \cite{wd:2002} this algorithm, for each position of a sliding window of size k, comparing the number of boundaries in the ground truth with the number of boundaries predicted by the Topic Segmentation model. The lower the value, the better.\\
     $WD(pred, true) = \frac{1}{N - k}\sum_{i = 1}^{N - k}(\left\lvert bounds(true_{i}, true_{i + k}) - bounds(pred_{i}, pred_{i + k}) \right\rvert > 0)$, \\ 
-    where $bounds(s, s + i)$ represents the number of boundaries between two positions $i$ and $j$ in the text, $N$ represents the number of sentences in the text.
+    where $bounds(s, s + i)$ is the number of boundaries between $i$ and $j$ positions, $N$ - number of sentences in the text.
 \end{itemize} 
 
-In practice, both $Pk$ and $WindowDiff$ scores are used to evaluate a model. 
-A lower score means predictions are closer to the actual boundaries.
 
 \section{PromptTopic}
 
@@ -336,12 +334,9 @@ A lower score means predictions are closer to the actual boundaries.
 \subsection{Stage Evaluation}
 As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
 \begin{itemize}
-    \item \textbf{Topic diversity} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
-    \item \textbf{Topic coherence} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
+    \item \textbf{Topic diversity} \cite{topicdiversity:2019} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
+    \item \textbf{Topic coherence} \cite{topiccoh:2009} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
     \end{itemize}
-
-
-
 \newpage
 \chapter{Experiments}
 
@@ -350,6 +345,7 @@ This description is included in the theoretical part of the work.
 
 
 \section{Experiments settings}
+
 
 
 
