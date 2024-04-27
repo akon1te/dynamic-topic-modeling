@@ -268,6 +268,27 @@ The approaches and algorithms used in these stages will be described in detail f
 
 \section{ASR approach}
 
+Since one of the significant tasks is to use DTM for audio data, the first, but optional, stage of our pipeline will be a model for automatic speech recognition. 
+In this section, we will look at the whisper model from OpenAI and the MODEL 2.
+
+\subsection{Whisper}
+
+%need perephrace
+
+Whisper is an automatic speech recognition (ASR) system trained on 680,000 hours of multilingual and multitask supervised data collected from the web. 
+We show that the use of such a large and diverse dataset leads to improved robustness to accents, background noise and technical language. Moreover, it enables transcription in multiple languages, as well as translation from those languages into English. 
+We are open-sourcing models and inference code to serve as a foundation for building useful applications and for further research on robust speech processing.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7  ]{img/whisper.png}
+    \caption{Whisper architecture}
+\end{figure}
+
+The Whisper architecture is a simple end-to-end approach, implemented as an encoder-decoder Transformer. 
+Input audio is split into 30-second chunks, converted into a log-Mel spectrogram, and then passed into an encoder. 
+A decoder is trained to predict the corresponding text caption, intermixed with special tokens that direct the single model to perform tasks such as language identification, phrase-level timestamps, multilingual speech transcription, and to-English speech translation.
+
 
 \section{Improving Utterance-Pair Coherence Scoring}
 
@@ -331,6 +352,7 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
 \subsection{LLM for topic extraction}
 
 
+
 \subsection{Stage Evaluation}
 As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
 \begin{itemize}
@@ -346,8 +368,22 @@ This description is included in the theoretical part of the work.
 
 \section{Experiments settings}
 
+\textbf{Datasets}
 
+For the experiments we will use two types of datasets: text dialogues and audio dialogues. 
+For text dialogues, we will use tiage, compiled from the personal chat corpus and manually annotated, and superdialseg, compiled from several smaller datasets: doc2dial and multidoc2dial. 
+As for the audio dialogues, we will use QMSum, which includes the audio recording corpuses - AMI and ISCI and is divided into three types of meetings (product, academic, committee). \\
 
+\textbf{Baseline Models}
+
+At the text clustering stage, comparisons are made between models of non-alternative baselines, because at this stage we are using a ready-made algorithm and making a minimum of changes.
+As for topic extraction, our LLM approach will be compared with BertTopic and LSA.
+
+\textbf{Pipeline configuration}
+
+MODEL1 will be used in the ASR for audio datasets. 
+At the dialogue clustering stage, BERT-based fine-tuning models will be used. 
+For topic extraction, the LlaMA 3 8B and Mistral 7B models will be used, in addition to experiments with a smaller model - phi3.
 
 \section{ASR experiments}
 
@@ -359,6 +395,21 @@ The input data at this stage are dialogues divided into separate utterances of t
 At this stage, experiments will be conducted using the encoder model for the Utterance-Coherence Scoring algorithm. 
 In addition, algorithms for the time of model inference will be performed throughout the pipeline to select the fastest solution.
 
+
+\begin{center}
+    \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
+        \hline
+        \multicolumn{2}{| c |}{Country List} & \multicolumn{3}{| c |}{Country List} &  \multicolumn{3}{| c |}{Country List}  \\
+        \hline
+        model & dataset & Pk & wd & f1 & Pk & wd & f1 \\ 
+        \hline
+        bert-base NSP & tiage & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & superseg & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-large NSP & tiage & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & superseg & Pk & wd & f1 & Pk & wd & f1 \\ 
+        \hline
+    \end{tabular}
+\end{center}
 
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
@@ -399,6 +450,10 @@ Additionally, because of the absence of financial opportunities, open-source mod
 
 \chapter{Conclusion}
 
+Summarizing all the results of the article:
+
+The study encompassed a range of approaches to topic modelling, including techniques such as segmentation of dialogues, topic extraction and topic evolution for dynamic topic modelling.
+For each of these stages, open source approaches with high reported metrics and open source models were studied.
 
 \putbibliography
 \end{document}
