@@ -346,25 +346,44 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
 \end{itemize} 
 
 
-\section{PromptTopic}
+\section{Topic Extraction}
+
+The next stage in the pipeline is topic extraction. At this stage, $n$ topics will be extracted from each segment in the dialogues. 
+At this stage, past approaches have used probabilistic or embedding approaches, like BertTopic \cite{berttopic:2022}. 
+In our work, we will apply a generative approach using Large Language models, as in PromptTopic \cite{prompttopic:2023}.
+
+We will try several Large Language Models by submitting a dialogue segment as input. The prompt for LLM will look like this:
+
+\begin{lstlisting}
+    <|user|> 
+    utterance_1
+    utterance_2
+    ...
+    utterance_n. 
+    You have dialogue between two people, 
+    extract N topic words. 
+    <|assistant|>
+
+\end{lstlisting}
 
 
-\subsection{LLM for topic extraction}
+where $utterance$ is one phrase of the participant in the dialogue, \\$M$ - is the number of words. The appearance of the keywords <|user|>, <|assistant|> dependes on type of LLM.
 
 
 
 \subsection{Stage Evaluation}
+
 As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
 \begin{itemize}
     \item \textbf{Topic diversity} \cite{topicdiversity:2019} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
     \item \textbf{Topic coherence} \cite{topiccoh:2009} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
-    \end{itemize}
-\newpage
+\end{itemize}
+
+
 \chapter{Experiments}
 
 The experiments will be divided into stages, with each stage accompanied by a description of the stage and the algorithms used. 
 This description is included in the theoretical part of the work.
-
 
 \section{Experiments settings}
 
@@ -374,10 +393,27 @@ For the experiments we will use two types of datasets: text dialogues and audio 
 For text dialogues, we will use tiage, compiled from the personal chat corpus and manually annotated, and superdialseg, compiled from several smaller datasets: doc2dial and multidoc2dial. 
 As for the audio dialogues, we will use QMSum, which includes the audio recording corpuses - AMI and ISCI and is divided into three types of meetings (product, academic, committee). \\
 
+\begin{table}[htb]
+    \begin{center}
+        \begin{tabular}{ | c | c | c | c |} 
+            \hline
+            dataset & train/val/test & Avg Turns & Avg tokens \\ 
+            \hline
+            SuperDialseg & 6984/1322/1322 & 13 & 239 \\ 
+            Tiage &  7939/-/1000 & 14.7  & null \\ 
+            Product Meetings (QMSum) & 137 & 535.6 & null \\ 
+            Academic Meetings (QMSum) & 59 & 819.0 & null \\ 
+            Comemitie Meetings (QMSum) & 36 & 207.7 & null \\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{table}
+
+
 \textbf{Baseline Models}
 
 At the text clustering stage, comparisons are made between models of non-alternative baselines, because at this stage we are using a ready-made algorithm and making a minimum of changes.
-As for topic extraction, our LLM approach will be compared with BertTopic and LSA.
+As for topic extraction, our LLM approach will be compared with BertTopic and LSA. \\
 
 \textbf{Pipeline configuration}
 
@@ -386,6 +422,7 @@ At the dialogue clustering stage, BERT-based fine-tuning models will be used.
 For topic extraction, the LlaMA 3 8B and Mistral 7B models will be used, in addition to experiments with a smaller model - phi3.
 
 \section{ASR experiments}
+
 
 
 
@@ -399,47 +436,75 @@ In addition, algorithms for the time of model inference will be performed throug
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
         \hline
-        \multicolumn{2}{| c |}{Country List} & \multicolumn{3}{| c |}{Country List} &  \multicolumn{3}{| c |}{Country List}  \\
+        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Tiage} &  \multicolumn{3}{| c |}{SuperDialseg}  \\
         \hline
-        model & dataset & Pk & wd & f1 & Pk & wd & f1 \\ 
+        model &  Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
-        bert-base NSP & tiage & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & superseg & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-large NSP & tiage & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & superseg & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
 \end{center}
 
+In terms of textual datasets ...
+
 \begin{center}
-    \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
+    \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |} 
         \hline
-        \multicolumn{2}{| c |}{Country List} & \multicolumn{3}{| c |}{Country List} &  \multicolumn{3}{| c |}{Country List}  \\
+        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Product} &  \multicolumn{3}{| c |}{Academic} & \multicolumn{3}{| c |}{Committee} \\
         \hline
-        model & dataset & Pk & wd & f1 & Pk & wd & f1 \\ 
+        model  & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
-        bert-base NSP & committee & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & committee & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-large NSP & isci & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & isci & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base NSP & ami & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & ami & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
+        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
 \end{center}
+
+Speaking about results on audio corpora ...
 
 \section{Topic extraction}
-
 \begin{center}
-    \begin{tabular}{ |c|c|c| } 
-     \hline
-     model & Pk & wd \\ 
-     \hline
-     bert-base NSP & cell5 & cell6 \\ 
-     bert-base CLS & cell8 & cell9 \\ 
-     \hline
+    \begin{tabular}{ | c | c | c | c | c | } 
+        \hline
+        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Tiage} &  \multicolumn{2}{| c |}{SuperDialseg}  \\
+        \hline
+        model & TC & TD & TC & TD \\ 
+        \hline
+        bert-base NSP & c & d & c & d \\ 
+        bert-base CLS & c & d & c & d \\ 
+        bert-large NSP & c & d & c & d \\ 
+        bert-base CLS & c & d & c & d \\ 
+        \hline
     \end{tabular}
 \end{center}
+
+In terms of textual datasets ...
+
+\begin{center}
+    \begin{tabular}{ | c | c | c | c | c | c | c |} 
+        \hline
+        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Product} &  \multicolumn{2}{| c |}{Academic} & \multicolumn{2}{| c |}{Committee} \\
+        \hline
+        model  & TC & TD & TC & TD & TC & TD  \\ 
+        \hline
+        LLaMA2 7b & c & d & c & d & c & d \\ 
+        LLaMA3 8b & c & d & c & d & c & d \\ 
+        Mistral 7B & c & d & c & d & c & d \\ 
+        phi3 & c & d & c & d & c & d \\ 
+        bert-base NSP & c & d & c & d & c & d \\ 
+        bert-base CLS & c & d & c & d & c & d \\ 
+        \hline
+    \end{tabular}
+\end{center}
+
+Speaking about results on audio corpora ...
 
 \section{Topic Evolution}
 
@@ -451,9 +516,14 @@ Additionally, because of the absence of financial opportunities, open-source mod
 \chapter{Conclusion}
 
 Summarizing all the results of the article:
-
-The study encompassed a range of approaches to topic modelling, including techniques such as segmentation of dialogues, topic extraction and topic evolution for dynamic topic modelling.
-For each of these stages, open source approaches with high reported metrics and open source models were studied.
+\begin{itemize}
+    \item Various approaches for dialogue segmentation, topic mining, and topic evolution have been explored;
+    \item The search for suitable text and audio datasets was conducted, and the selected datasets were analysed and preprocessed for experiments at all stages and for the entire pipeline.
+    \item In the context of the dialog segmentation stage, the optimal open-source solution was identified and the BERT model was subjected to detailed analysis.  This approach has been prepared and integrated into the general pipeline.
+    \item At the topic extraction stage, new approaches utilising generative models were investigated. Furthermore, a range of large language models, including LlaMA and Mistral, were examined, along with novel features that enhance the default architecture of the Transformer.
+    \item Topic Evolution
+    \item A suitable set of metrics was identified and selected to evaluate the quality of each stage. In order to utilise the metrics, a library with an implementation was Investigated and integrated into pipeline.
+\end{itemize}
 
 \putbibliography
 \end{document}

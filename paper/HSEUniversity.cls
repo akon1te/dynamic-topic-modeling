@@ -12,7 +12,7 @@
 \RequirePackage{csquotes}
 \RequirePackage[english]{babel}	% Языки: русский, английский
 
-
+\RequirePackage{wrapfig}
 \RequirePackage[font=small,skip=4pt]{caption}
 \RequirePackage{graphicx}
 
@@ -33,6 +33,7 @@
 \RequirePackage{amsfonts}
 \RequirePackage{amssymb}
 
+\usepackage{listings}
 
 \RequirePackage[linktocpage=true,plainpages=false,pdfpagelabels=false]{hyperref}
 
