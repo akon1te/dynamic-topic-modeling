@@ -181,11 +181,11 @@
 }
 \ProcessKeyvalOptions*
 
-\def\@year{1900}
-\def\@supervisorTitle{}
-\def\@supervisorName{I.I.~Ivanov}
+\def\@year{2024}
+\def\@supervisorTitle{Associate professor NRU HSE - Nizhniy Novgorod}
+\def\@supervisorName{L.V. Savchenko}
 \def\@reviewerTitle{}
-\def\@reviewerName{I.I.~Ivanov}
+\def\@reviewerName{}
 \def\@abstract{TODO}
 
 \newcommand{\Year}[1]{\def\@year{#1}}
@@ -264,7 +264,7 @@
 	\vfill
 	\vfill
 
-	Nizhny Novgorod, \@year{} год
+	Nizhny Novgorod, \@year{}
 
 	\newpage
 }
