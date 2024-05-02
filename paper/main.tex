@@ -237,7 +237,10 @@ It's a promising technique for improving the efficiency of transformer models, p
     \centering
     \includegraphics[scale=1]{img/gqa.png}
     \caption{Self-attention and Grouped-query attention}
-\end{figure}
+\end{figure} 
+
+\newpage
+In april 2024 was released LLaMA3 8B and 70B models with some new features: larger tokenizer vocabulary 128k agains 32k, the dataset for pre-training contains 8 times more sampels on over 15 trillion tokens on a new mix of publicly available online data   
 
 
 \subsection{Mistral}
@@ -434,7 +437,8 @@ In addition, algorithms for the time of model inference will be performed throug
         bert-base NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
         bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
         bert-large NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
+        opt-128 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        dialoGPT-medium & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
 \end{center}
@@ -451,9 +455,8 @@ In terms of textual datasets ...
         bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
         bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
         bert-large NSP & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        opt-128 &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        dialoGPT-medium &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
 \end{center}
@@ -468,10 +471,12 @@ Speaking about results on audio corpora ...
         \hline
         model & TC & TD & TC & TD \\ 
         \hline
-        bert-base NSP & c & d & c & d \\ 
-        bert-base CLS & c & d & c & d \\ 
-        bert-large NSP & c & d & c & d \\ 
-        bert-base CLS & c & d & c & d \\ 
+        LLaMA3 8B & c & d & c & d \\ 
+        Qwen1.5 7B & c & d & c & d \\ 
+        Mistral 7B & c & d & c & d \\ 
+        \hline
+        BertTopic & c & d & c & d \\
+        LSA  & c & d & c & d \\
         \hline
     \end{tabular}
 \end{center}
@@ -485,12 +490,12 @@ In terms of textual datasets ...
         \hline
         model  & TC & TD & TC & TD & TC & TD  \\ 
         \hline
-        LLaMA2 7b & c & d & c & d & c & d \\ 
-        LLaMA3 8b & c & d & c & d & c & d \\ 
+        LLaMA3 8B & c & d & c & d & c & d \\ 
+        Qwen1.5 7B & c & d & c & d & c & d \\ 
         Mistral 7B & c & d & c & d & c & d \\ 
-        phi3 & c & d & c & d & c & d \\ 
-        bert-base NSP & c & d & c & d & c & d \\ 
-        bert-base CLS & c & d & c & d & c & d \\ 
+        \hline
+        BertTopic & c & d & c & d & c & d \\ 
+        LSA & c & d & c & d & c & d \\ 
         \hline
     \end{tabular}
 \end{center}
