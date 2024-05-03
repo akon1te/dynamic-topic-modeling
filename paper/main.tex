@@ -213,7 +213,7 @@ The training dataset presented in the original paper states that when trained, 5
 \textbf{LLM} is a type of artificial intelligence(AI) algorithm that use deep learning techniques and massively large data sets to understand, summarize, generate, and predict new content. 
 LLMs are trained with immense amounts of data and use self-supervised learning to predict the next token in a sentence, given the surrounding context. 
 Once an LLM has been trained, it can be fine-tuned for a wide range of NLP tasks, including generating and classifying text, answering questions.
-The following section will examine the main LLMs used in the article.
+The following section will examine the main LLMs used in the experiments: LLaMA, Mistral, Qwen.
 
 \subsection{LLaMA}
 
@@ -260,6 +260,28 @@ As other models, Mistral is a transformer based model. However, it differs from 
     In the event that a prompt is of a considerable length, it can be divided into smaller units, with the cache being filled in this manner. 
     The attention mask operates over both the cache and the chunk
 \end{itemize}
+
+\subsection{Qwen}
+
+The Qwen LLMs have been extensively trained on up to 3 trillion tokens of diverse text and code examples from a wide range of domains. 
+Qwen demonstrate superior performance in various downstream tasks.
+
+In terms of architecture: model based on LLaMA, activation function is SwiGLU, Rotary Embeddings, Pre-Norm and RMSNorm instead LayerNorm. 
+
+The pre-training phase involves learning vast amounts of data to gain a comprehensive understanding of the world and its various complexities. 
+This includes not only basic language skills, but also advanced skills such as arithmetic, coding and reasoning. 
+In this section we introduce the data, model design and scaling, and the extensive evaluation results on benchmark datasets.
+
+The Qwen Series encompasses models that employ SFT and RLHF to align Qwen with human preference. 
+Consequently, the Qwen-Chat and its enhanced variant, the Qwen-Chat-RLHF, have been developed. Furthermore, we have created bespoke models for coding and mathematics.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=1]{img/qwen.png}
+    \caption{Qwen Series}
+\end{figure} 
+
+For now, there are 5 models of different sizes, 4 of which are opensourced. Specially, Qwen-1.8B, Qwen-7B, Qwen-14B, and Qwen-72B.
 
 
 The pipeline of dynamic thematic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
@@ -359,7 +381,7 @@ We will try several Large Language Models by submitting a dialogue segment as in
     ...
     utterance_n. 
     Extract N key words or pharases 
-    that describe the given dialog between two peoples 
+    that describe the given dialog between two peoples, 
     do not use more than 2 wrods 
     <|assistant|>
 
