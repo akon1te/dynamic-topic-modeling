@@ -1,2 +1,0 @@
-- write more about topic extraction stage
-- write about topic evolution stage

@@ -10,7 +10,7 @@
 \begin{document}
 \maketitle
 
-\chapter{Introduction}
+\chapter*{Introduction}
 
 Natural Language Processing (NLP) has emerged as a crucial field in computer science, enabling machines to comprehend and respond to human language in a meaningful way. 
 Among the various tasks within NLP, dialogue understanding, which involves analyzing and interpreting natural language conversations, has gained significant attention. 
@@ -36,15 +36,14 @@ In addition, exploring the possibilities of using large language models, which a
 
 \section{Research Objectives}
 
-The main objectives of the research work:
+The main objectives of the research work is to create and apply Dynamic Topic Modeling pipeline for audio and text dialogues. 
+To solve this problem, you will need to complete the following tasks 
 \begin{enumerate}
-    \item Investigate existing solutions for dynamic text and dialogue topic modelling
-    \item The definition of the main stages for DTM for audio dialogues
-    \item The identification of suitable training data sets and their collection
+    \item The identification of suitable datasets for experiments
+    \item Investigate open-source solutions for ASR, dialogue clustering, topic extraction and topic evolution.
     \item An exploration of the possibilities of using large language models for some stages and the selection of models suitable for training in limited resources
     \item The development of the architecture of all stages and their interconnections
     \item Selection of appropriate metrics and measurement of the quality of the approaches used at each stage
-    \item Visual evaluation of the pipeline inference on choosen audio samples
 \end{enumerate}
 
     
@@ -283,12 +282,7 @@ Consequently, the Qwen-Chat and its enhanced variant, the Qwen-Chat-RLHF, have b
 
 For now, there are 5 models of different sizes, 4 of which are opensourced. Specially, Qwen-1.8B, Qwen-7B, Qwen-14B, and Qwen-72B.
 
-
-The pipeline of dynamic thematic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
-These include audio-to-text, dialogue segmentation, topic extraction, and topic evolution. 
-The approaches and algorithms used in these stages will be described in detail from a theoretical point of view.
-
-\section{ASR approach}
+\section{Automatic Speech Recognition}
 
 Since one of the significant tasks is to use DTM for audio data, the first, but optional, stage of our pipeline will be a model for automatic speech recognition. 
 In this section, we will look at the Whisper \cite{whisper:2022} model from OpenAI.
@@ -308,6 +302,9 @@ We are open-sourcing models and inference code to serve as a foundation for buil
 The Whisper architecture is a simple end-to-end approach, implemented as an encoder-decoder Transformer. 
 Input audio is split into 30-second chunks, converted into a log-Mel spectrogram, and then passed into an encoder. 
 A decoder is trained to predict the corresponding text caption, intermixed with special tokens that direct the single model to perform tasks such as language identification, phrase-level timestamps, multilingual speech transcription, and to-English speech translation.
+
+\subsection{Speaker-diarization}
+
 
 
 \section{Improving Utterance-Pair Coherence Scoring}
@@ -347,7 +344,10 @@ where $h_{l}, h_{r}$ - the highest cs for $i$ pair in choosen range.
 The greater the depth score between two statements, the less likely it is that they share a thematic relationship. 
 To identify the pairs along which the boundaries of the thematic segments lie, the threshold value is calculated as follows: $threshold = \mu - \frac{\sigma}{2}$, where $\mu$ is the average value and $\sigma$ is the standard deviation. Pairs with a depth score above the $threshold$ value will be choosen as boundaries.
 
-\subsection{Evaluation Metrics}
+
+\section{Evaluation Metrics}
+
+\subsection{Dialogue segmentation}
 
 After defining the basic segmentation algorithm, it is worth talking about evaluation metrics for this stage:
 \begin{itemize}
@@ -365,6 +365,46 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
     where $bounds(s, s + i)$ is the number of boundaries between $i$ and $j$ positions, $N$ - number of sentences in the text.
 \end{itemize} 
 
+\subsection{Topic extraction}
+
+As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
+\begin{itemize}
+    \item \textbf{Topic diversity} \cite{topicdiversity:2019} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
+    \item \textbf{Topic coherence} \cite{topiccoh:2009} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
+\end{itemize}
+
+
+
+\chapter{Methodology}
+
+\section{Pipeline configuration}
+
+The pipeline of dynamic thematic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
+These include ASR, dialogue segmentation, topic extraction and topic evolution. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{img/pipeline.png}
+    \caption{DTM pipeline}
+\end{figure}
+
+All the models in the pipeline were taken from the \href{https://huggingface.co/}{HuggingFace} hub. 
+Tools from \href{https://huggingface.co/docs/transformers/index}{transformers}, which is also part of HuggingFace, 
+will be used to create the pipeline.
+
+\section{ASR}
+
+The first optional stage is the Automatic Speech Recognition. 
+For audio dialogues, text is extracted from the audio track before segmentation. 
+For this stage, open-source:
+\begin{itemize}
+    \item OpenAI Whisper \\
+    Link to model: \href{https://huggingface.co/openai/whisper-large-v3}{whisper-large-v3};
+    \item pyannote SpeakerDiarization \\
+    Link to model: \href{https://huggingface.co/pyannote/speaker-diarization-3.0}{speaker-diarization-3.0};
+\end{itemize} 
+
+\section{Dialogue Segmentation}
 
 \section{Topic Extraction}
 
@@ -372,7 +412,19 @@ The next stage in the pipeline is topic extraction. At this stage, $n$ topics wi
 At this stage, past approaches have used probabilistic or embedding approaches, like BertTopic \cite{berttopic:2022}. 
 In our work, we will apply a generative approach using Large Language models, as in PromptTopic \cite{prompttopic:2023}.
 
-We will try several Large Language Models by submitting a dialogue segment as input. The prompt for LLM will look like this:
+We will try several Large Language Models:
+\begin{itemize}
+    \item MetaAI LLaMA3 8b \\
+    Link to model: \href{https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct}{meta-llama3-8b}
+    \item Qwen1.5 7b \\
+    Link to model: \href{https://huggingface.co/Qwen/Qwen1.5-7B-Chat}{Qwen1.5 7B}
+    \item Mistral 7b \\
+    Link to model: \href{https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1}{Mistral 7B}
+\end{itemize} 
+
+
+
+The prompt for LLM will look like this:
 
 \begin{lstlisting}
     <|user|> 
@@ -380,25 +432,17 @@ We will try several Large Language Models by submitting a dialogue segment as in
     utterance_2
     ...
     utterance_n. 
-    Extract N key words or pharases 
-    that describe the given dialog between two peoples, 
-    do not use more than 2 wrods 
+    Please list of high-level topic words 
+    in the following dialogue:
     <|assistant|>
 
 \end{lstlisting}
 
-
 where $utterance$ is one phrase of the participant in the dialogue, \\$M$ - is the number of words. The appearance of the keywords <|user|>, <|assistant|> dependes on type of LLM.
 
+\section{Topic Evolution}
 
 
-\subsection{Stage Evaluation}
-
-As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
-\begin{itemize}
-    \item \textbf{Topic diversity} \cite{topicdiversity:2019} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
-    \item \textbf{Topic coherence} \cite{topiccoh:2009} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
-\end{itemize}
 
 
 \chapter{Experiments}
@@ -428,20 +472,16 @@ As for the audio dialogues, we will use QMSum, which includes the audio recordin
             \hline
         \end{tabular}
     \end{center}
+    \captionof{table}{Datasets}
 \end{table}
+
 
 
 \textbf{Baseline Models}
 
-At the text clustering stage, comparisons are made between models of non-alternative baselines, because at this stage we are using a ready-made algorithm and making a minimum of changes.
+At the text clustering stage, comparisons are made between models of non-alternative baselines, 
+because at this stage we are using a ready-made algorithm and making a minimum of changes.
 As for topic extraction, our LLM approach will be compared with BertTopic and LSA. \\
-
-\textbf{Pipeline configuration}
-
-MODEL1 will be used in the ASR for audio datasets. 
-At the dialogue clustering stage, BERT-based fine-tuning models will be used. 
-For topic extraction, the LlaMA 3 8B and Mistral 7B models will be used, in addition to experiments with a smaller model - phi3.
-
 
 \section{Text clustering}
 
@@ -534,7 +574,7 @@ Speaking about results on audio corpora ...
 The LLM and other models require a significant amount of computing resources, including GPUs. Due to the limited availability of resources, the models were not larger than 8 billion parameters and did not exceed 16 GB during training and inference at all stages. 
 Additionally, because of the absence of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT4 or LlaMA2 80b), the experimental results would be considerably more favourable.
 
-\chapter{Conclusion}
+\chapter*{Conclusion}
 
 Summarizing all the results of the article:
 \begin{itemize}

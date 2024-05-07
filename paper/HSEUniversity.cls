@@ -28,6 +28,7 @@
 %%% Table of Contents %%%
 \RequirePackage{tocloft}
 \RequirePackage{titletoc}
+\RequirePackage{lmodern}
 
 \RequirePackage{amsmath}
 \RequirePackage{amsfonts}
@@ -42,7 +43,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \RequirePackage[
 	style=gost-numeric-min,
-	language=russian,
+	language=english,
 	babel=other,
 	backend=biber,
 	defernumbers=true,% Нумерация начинается как только встречается группа.
@@ -96,7 +97,7 @@
 \linespread{1.25} % Полуторный интервал
 \setlength{\parindent}{12.5mm} % Отступ красной строки
 
-\captionsetup[table]{position=t,singlelinecheck=false, justification=RaggedLeft,labelsep=period}
+\captionsetup[table]{position=t, singlelinecheck=false, justification=centering, labelsep=period}
 \captionsetup[figure]{labelfont={bf},textfont={bf},position=b,singlelinecheck=false,labelsep=period,justification=centering}
 
 %%% Главы и разделы %%%
