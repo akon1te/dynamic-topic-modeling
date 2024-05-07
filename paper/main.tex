@@ -36,14 +36,13 @@ In addition, exploring the possibilities of using large language models, which a
 
 \section{Research Objectives}
 
-The main objectives of the research work is to create and apply Dynamic Topic Modeling pipeline for audio and text dialogues. 
+The main objectives of the research work is to create and apply Dynamic Topic Modeling pipeline based on LLM for topic extraction for audio and text dialogues. 
 To solve this problem, you will need to complete the following tasks 
 \begin{enumerate}
-    \item The identification of suitable datasets for experiments
-    \item Investigate open-source solutions for ASR, dialogue clustering, topic extraction and topic evolution.
-    \item An exploration of the possibilities of using large language models for some stages and the selection of models suitable for training in limited resources
-    \item The development of the architecture of all stages and their interconnections
-    \item Selection of appropriate metrics and measurement of the quality of the approaches used at each stage
+    \item The identification of suitable datasets for experiments;
+    \item The investigation of the best suitable open-source solutions for ASR, dialogue clustering, topic extraction and topic evolution;
+    \item The exploration of the possibilities of using Large Language Models for some stages and the selection of models suitable for training in limited resources;
+    \item The selection of appropriate metrics and measurement of the quality of the approaches used at each stage;
 \end{enumerate}
 
     
@@ -208,7 +207,7 @@ In order to understand relationship between two sentences, BERT training process
 During training the model gets as input pairs of sentences and it learns to predict if the second sentence is the next sentence in the original text as well. 
 The training dataset presented in the original paper states that when trained, 50\% of the examples contain related sentences extracted from the training texts, while the remaining 50\% contain a random pair of sentences.\\
 
-\newpage
+
 \textbf{LLM} is a type of artificial intelligence(AI) algorithm that use deep learning techniques and massively large data sets to understand, summarize, generate, and predict new content. 
 LLMs are trained with immense amounts of data and use self-supervised learning to predict the next token in a sentence, given the surrounding context. 
 Once an LLM has been trained, it can be fine-tuned for a wide range of NLP tasks, including generating and classifying text, answering questions.
@@ -239,7 +238,7 @@ It's a promising technique for improving the efficiency of transformer models, p
 \end{figure} 
 
 \newpage
-In april 2024 was released LLaMA3 8B and 70B models with some new features: larger tokenizer vocabulary 128k agains 32k, the dataset for pre-training contains 8 times more sampels on over 15 trillion tokens on a new mix of publicly available online data   
+In april 2024 was released LLaMA3 8B and 70B models with some new features: larger tokenizer vocabulary 128k agains 32k, the dataset for pre-training contains 8 times more sampels on over 15 trillion tokens on a new mix of publicly available online data.   
 
 
 \subsection{Mistral}
@@ -295,7 +294,7 @@ We are open-sourcing models and inference code to serve as a foundation for buil
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=0.7  ]{img/whisper.png}
+    \includegraphics[scale=0.7]{img/whisper.png}
     \caption{Whisper architecture}
 \end{figure}
 
@@ -346,6 +345,25 @@ To identify the pairs along which the boundaries of the thematic segments lie, t
 
 
 \section{Evaluation Metrics}
+
+\subsection{ASR}
+
+Word Error Rate (WER) is the metric for speech recognition. This metric counts errors at the word level. 
+A substitutions (S), insertions (I) and deletions (D) error are counted for each word.
+For example:
+
+\begin{figure}[h]
+    \includegraphics[scale=1]{img/wer.png}
+\end{figure}
+
+Word "sat" predicted as "sit", it is substitutions error, and the word "mat" and was not recognized at all, it is deletion error.\\
+To calculate the metric, take the formula:
+
+$WER = \frac{S + I + D}{N}$, \\
+where N is total number of words in the example.
+
+Note that the word "sit" has only one incorrect character, but the whole word is marked as incorrect.
+This is a defining feature of the WER: spelling errors are heavily penalised, no matter how minor.
 
 \subsection{Dialogue segmentation}
 
@@ -406,6 +424,7 @@ For this stage, open-source:
 
 \section{Dialogue Segmentation}
 
+
 \section{Topic Extraction}
 
 The next stage in the pipeline is topic extraction. At this stage, $n$ topics will be extracted from each segment in the dialogues. 
@@ -420,25 +439,21 @@ We will try several Large Language Models:
     Link to model: \href{https://huggingface.co/Qwen/Qwen1.5-7B-Chat}{Qwen1.5 7B}
     \item Mistral 7b \\
     Link to model: \href{https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1}{Mistral 7B}
-\end{itemize} 
-
-
+\end{itemize}  
 
 The prompt for LLM will look like this:
 
 \begin{lstlisting}
     <|user|> 
-    utterance_1
-    utterance_2
-    ...
-    utterance_n. 
+    <dialogue> 
     Please list of high-level topic words 
     in the following dialogue:
     <|assistant|>
-
 \end{lstlisting}
 
-where $utterance$ is one phrase of the participant in the dialogue, \\$M$ - is the number of words. The appearance of the keywords <|user|>, <|assistant|> dependes on type of LLM.
+The appearance of the keywords <|user|>, <|assistant|> dependes on type of LLM.
+
+
 
 \section{Topic Evolution}
 
