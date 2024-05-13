@@ -315,8 +315,8 @@ The Whisper architecture is a simple end-to-end approach, implemented as an enco
 Input audio is split into 30-second chunks, converted into a log-Mel spectrogram, and then passed into an encoder. 
 A decoder is trained to predict the corresponding text caption, intermixed with special tokens that direct the single model to perform tasks such as language identification, phrase-level timestamps, multilingual speech transcription, and to-English speech translation.
 
-
 \section{Improving Utterance-Pair Coherence Scoring}
+\label{seg}
 
 The dialogue segmentation stage represents the initial stage for textual type of data. 
 The result is a set of utterance indices that indicate the beginning of a thematically related group. 
@@ -434,8 +434,9 @@ For this stage we use:
 
 \section{Dialogue Segmentation}
 
-
-
+The algorithm \ref{seg} will be used to dialogues segmentation. 
+The implementation of the algorithm will be taken from the \href{https://github.com/lxing532/Dialogue-Topic-Segmenter}{official github repository}. 
+Part of the code with the model inference will be adapted to the pipeline.
 
 \section{Topic Extraction}
 
