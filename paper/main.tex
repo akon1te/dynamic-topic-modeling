@@ -40,7 +40,7 @@ The main objectives of the research work is to create and apply Dynamic Topic Mo
 To solve this problem, you will need to complete the following tasks 
 \begin{enumerate}
     \item The identification of suitable datasets for experiments;
-    \item The investigation of the best suitable open-source solutions for ASR, dialogue clustering, topic extraction and topic evolution;
+    \item The investigation of the best suitable open-source solutions for speaker diarisation, dialogue clustering, topic extraction and topic evolution;
     \item The exploration of the possibilities of using Large Language Models for some stages and the selection of models suitable for training in limited resources;
     \item The selection of appropriate metrics and measurement of the quality of the approaches used at each stage;
 \end{enumerate}
@@ -281,10 +281,23 @@ Consequently, the Qwen-Chat and its enhanced variant, the Qwen-Chat-RLHF, have b
 
 For now, there are 5 models of different sizes, 4 of which are opensourced. Specially, Qwen-1.8B, Qwen-7B, Qwen-14B, and Qwen-72B.
 
-\section{Automatic Speech Recognition}
+\section{Speaker diarization}
 
-Since one of the significant tasks is to use DTM for audio data, the first, but optional, stage of our pipeline will be a model for automatic speech recognition. 
-In this section, we will look at the Whisper \cite{whisper:2022} model from OpenAI.
+Since one of the significant tasks is to use DTM for audio dialogues, the first, but optional, stage of our pipeline will be a model for speaker diarization. 
+
+Speaker diarisation is the process of automatically segmenting and identifying different speakers in an audio recording. 
+The goal of speaker diarisation is to divide the audio stream into non-homogeneous segments, each segment corresponding to a specific speaker or speaker turn.
+
+The fundamental process of building a speaker diarization system involves the following steps:
+
+\begin{itemize}
+    \item Segmentation: The audio recording is divided into differente segments based on conditions like silence, pauses, and changes in speaker turns.
+    \item Speaker Embedding: Embeddings are extracted for each segment to represent the speech features of unique speaker.
+    \item Clustering: The extracted embeddings are clustered based on similarity, with segments from the same speaker forming a single cluster.
+    \item Labeling: Once the clustering is complete, each segment is assigned a label representing the speaker's identity. Segments in the same cluster are assigned the same label, indicating they belong to the same speaker.
+\end{itemize}
+
+As ASR model for this stage, we will look at the Whisper \cite{whisper:2022} model from OpenAI.
 
 \subsection{Whisper}
 
@@ -301,9 +314,6 @@ We are open-sourcing models and inference code to serve as a foundation for buil
 The Whisper architecture is a simple end-to-end approach, implemented as an encoder-decoder Transformer. 
 Input audio is split into 30-second chunks, converted into a log-Mel spectrogram, and then passed into an encoder. 
 A decoder is trained to predict the corresponding text caption, intermixed with special tokens that direct the single model to perform tasks such as language identification, phrase-level timestamps, multilingual speech transcription, and to-English speech translation.
-
-\subsection{Speaker-diarization}
-
 
 
 \section{Improving Utterance-Pair Coherence Scoring}
@@ -349,12 +359,13 @@ To identify the pairs along which the boundaries of the thematic segments lie, t
 \subsection{ASR}
 
 Word Error Rate (WER) is the metric for speech recognition. This metric counts errors at the word level. 
-A substitutions (S), insertions (I) and deletions (D) error are counted for each word.
+A substitutions (S), insertions (I) and deletions (D) error are counted for each word. \\
 For example:
 
 \begin{figure}[h]
     \includegraphics[scale=1]{img/wer.png}
 \end{figure}
+
 
 Word "sat" predicted as "sit", it is substitutions error, and the word "mat" and was not recognized at all, it is deletion error.\\
 To calculate the metric, take the formula:
@@ -379,7 +390,7 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
     $F_{\beta} = (1 + \beta^{2}) \cdot \frac{precision \cdot recall}{(\beta^{2} \cdot precision) + recall}$
     \item \textbf{Pk score} \cite{pk:1999} is uses the sliding window method and counts the number of discrepancies between the ends of the predicted segments and the true segments. The final score is the counter divided by the number of measurements. The lower the value, the better.
     \item In \textbf{WindowDiff} \cite{wd:2002} this algorithm, for each position of a sliding window of size k, comparing the number of boundaries in the ground truth with the number of boundaries predicted by the Topic Segmentation model. The lower the value, the better.\\
-    $WD(pred, true) = \frac{1}{N - k}\sum_{i = 1}^{N - k}(\left\lvert bounds(true_{i}, true_{i + k}) - bounds(pred_{i}, pred_{i + k}) \right\rvert > 0)$, \\ 
+    $WD(pred, true) = \frac{1}{N - k}\sum_{i = 1}^{N - k}(\left\lvert bounds(true_{i}, true_{i + k}) - bounds(pred_{i}, pred_{i + k})\right\rvert > 0)$, \\ 
     where $bounds(s, s + i)$ is the number of boundaries between $i$ and $j$ positions, $N$ - number of sentences in the text.
 \end{itemize} 
 
@@ -390,7 +401,6 @@ As for the quality evaluation of the extracted topics, we will use two metrics: 
     \item \textbf{Topic diversity} \cite{topicdiversity:2019} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
     \item \textbf{Topic coherence} \cite{topiccoh:2009} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
 \end{itemize}
-
 
 
 \chapter{Methodology}
@@ -410,19 +420,21 @@ All the models in the pipeline were taken from the \href{https://huggingface.co/
 Tools from \href{https://huggingface.co/docs/transformers/index}{transformers}, which is also part of HuggingFace, 
 will be used to create the pipeline.
 
-\section{ASR}
+\section{Speaker Diarization}
 
-The first optional stage is the Automatic Speech Recognition. 
-For audio dialogues, text is extracted from the audio track before segmentation. 
-For this stage, open-source:
+The first optional stage is the Speaker Diarization. 
+For audio dialogues, text is extracted from the audio track before topic segmentation. 
+For this stage we use:
 \begin{itemize}
     \item OpenAI Whisper \\
     Link to model: \href{https://huggingface.co/openai/whisper-large-v3}{whisper-large-v3};
-    \item pyannote SpeakerDiarization \\
+    \item pyannote SpeakerDiarization library \\
     Link to model: \href{https://huggingface.co/pyannote/speaker-diarization-3.0}{speaker-diarization-3.0};
 \end{itemize} 
 
 \section{Dialogue Segmentation}
+
+
 
 
 \section{Topic Extraction}
@@ -453,8 +465,6 @@ The prompt for LLM will look like this:
 
 The appearance of the keywords <|user|>, <|assistant|> dependes on type of LLM.
 
-
-
 \section{Topic Evolution}
 
 
@@ -468,7 +478,6 @@ This description is included in the theoretical part of the work.
 \section{Experiments settings}
 
 \textbf{Datasets}
-
 For the experiments we will use two types of datasets: text dialogues and audio dialogues. 
 For text dialogues, we will use tiage, compiled from the personal chat corpus and manually annotated, and superdialseg, compiled from several smaller datasets: doc2dial and multidoc2dial. 
 As for the audio dialogues, we will use QMSum, which includes the audio recording corpuses - AMI and ISCI and is divided into three types of meetings (product, academic, committee). \\
@@ -593,7 +602,7 @@ Additionally, because of the absence of financial opportunities, open-source mod
 
 Summarizing all the results of the article:
 \begin{itemize}
-    \item Various approaches for dialogue segmentation, topic mining, and topic evolution have been explored;
+    \item Various approaches for topic diarization, dialogue segmentation, topic extraction, and topic evolution have been explored;
     \item The search for suitable text and audio datasets was conducted, and the selected datasets were analysed and preprocessed for experiments at all stages and for the entire pipeline.
     \item In the context of the dialog segmentation stage, the optimal open-source solution was identified and the BERT model was subjected to detailed analysis.  This approach has been prepared and integrated into the general pipeline.
     \item At the topic extraction stage, new approaches utilising generative models were investigated. Furthermore, a range of large language models, including LlaMA and Mistral, were examined, along with novel features that enhance the default architecture of the Transformer.
