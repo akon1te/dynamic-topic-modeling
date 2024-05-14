@@ -356,25 +356,26 @@ To identify the pairs along which the boundaries of the thematic segments lie, t
 
 \section{Evaluation Metrics}
 
-\subsection{ASR}
+\subsection{Speaker diarization}
 
-Word Error Rate (WER) is the metric for speech recognition. This metric counts errors at the word level. 
-A substitutions (S), insertions (I) and deletions (D) error are counted for each word. \\
-For example:
+The standard metric for speaker diarization problem is the Diarization error rate \:
+This metric computes the error in diarization in terms of a duration ratio, which means that a perfectly aligned hypothesis and reference diarization would result in DER=0. It sums up 3 error:
+\begin{itemize}
+    \item False Alarm - speech segment predicted where there is no speaker. It is error from ASR models.
+    \item Missed Detection - no speech detected where there is a speaker. It is error from ASR models.
+    \item Confusion	Speech - the wrong cluster. It is error from the clustering model
+\end{itemize}
 
 \begin{figure}[h]
-    \includegraphics[scale=1]{img/wer.png}
+    \centering
+    \includegraphics[scale=0.8]{img/der.png}
+    \caption{Diarization error rate }
 \end{figure}
 
-
-Word "sat" predicted as "sit", it is substitutions error, and the word "mat" and was not recognized at all, it is deletion error.\\
-To calculate the metric, take the formula:
-
-$WER = \frac{S + I + D}{N}$, \\
-where N is total number of words in the example.
-
-Note that the word "sit" has only one incorrect character, but the whole word is marked as incorrect.
-This is a defining feature of the WER: spelling errors are heavily penalised, no matter how minor.
+Mathematically, the metric can be written: 
+\begin{center}
+    $DER = \frac{False Alarm  +  Missed Detection  +  Confusion}{Total}$    
+\end{center}
 
 \subsection{Dialogue segmentation}
 
@@ -491,6 +492,7 @@ As for the audio dialogues, we will use QMSum, which includes the audio recordin
             \hline
             SuperDialseg & 6984/1322/1322 & 13 & 239 \\ 
             Tiage &  7939/-/1000 & 14.7  & null \\ 
+            \hline
             Product Meetings (QMSum) & 137 & 535.6 & null \\ 
             Academic Meetings (QMSum) & 59 & 819.0 & null \\ 
             Comemitie Meetings (QMSum) & 36 & 207.7 & null \\
@@ -507,6 +509,25 @@ As for the audio dialogues, we will use QMSum, which includes the audio recordin
 At the text clustering stage, comparisons are made between models of non-alternative baselines, 
 because at this stage we are using a ready-made algorithm and making a minimum of changes.
 As for topic extraction, our LLM approach will be compared with BertTopic and LSA. \\
+
+\section{Speaker diarization}
+
+\begin{center}
+    \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |} 
+        \hline
+        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Product} &  \multicolumn{3}{| c |}{Academic} & \multicolumn{3}{| c |}{Committee} \\
+        \hline
+        model  & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        \hline
+        whisper-large +  &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
+        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        opt-128 &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        dialoGPT-medium &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        \hline
+    \end{tabular}
+\end{center}
+
 
 \section{Text clustering}
 
