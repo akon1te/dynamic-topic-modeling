@@ -460,15 +460,36 @@ The prompt for LLM will look like this:
 \begin{lstlisting}
     <|user|> 
     <dialogue> 
-    Please list of high-level topic words 
-    in the following dialogue:
+    Give me N topic words 
+    from the following dialogue:
     <|assistant|>
 \end{lstlisting}
 
-The appearance of the keywords <|user|>, <|assistant|> dependes on type of LLM.
+where N is number of topic words, the appearance of the keywords <|user|>, <|assistant|> dependes on type of LLM.
+
+Moreover, in experiments, models are tested not only in zero-hour mode, but also in few-shot.
+A few-short is a technique in which there are examples of a query with an answer before the main question.
+In this case the prompt for LLM will look like this:
+
+\begin{lstlisting}
+    <|user|> 
+    <example_dialogue1> 
+    Give me N topic words 
+    from the following dialogue:
+    <example_answer1>
+
+    <example_dialogue2> 
+    Give me N topic words 
+    from the following dialogue:
+    <example_answer2>
+
+    <dialogue> 
+    Give me N topic words 
+    from the following dialogue:
+    <|assistant|>
+\end{lstlisting}
 
 \section{Topic Evolution}
-
 
 
 
@@ -491,20 +512,16 @@ As for the audio dialogues, we will use QMSum, which includes the audio recordin
             dataset & train/val/test & Avg Turns & Avg tokens \\ 
             \hline
             SuperDialseg & 6984/1322/1322 & 13 & 239 \\ 
-            Tiage &  7939/-/1000 & 14.7  & null \\ 
+            Tiage &  7939/-/1000 & 14.7  & - \\ 
             \hline
-            Product Meetings (QMSum) & 137 & 535.6 & null \\ 
-            Academic Meetings (QMSum) & 59 & 819.0 & null \\ 
-            Comemitie Meetings (QMSum) & 36 & 207.7 & null \\
+            Product Meetings (QMSum) & 137 & 535.6 & - \\ 
+            Academic Meetings (QMSum) & 59 & 819.0 & - \\ 
+            Comemitie Meetings (QMSum) & 36 & 207.7 & - \\
             \hline
         \end{tabular}
     \end{center}
     \captionof{table}{Datasets}
 \end{table}
-
-
-
-\textbf{Baseline Models}
 
 At the text clustering stage, comparisons are made between models of non-alternative baselines, 
 because at this stage we are using a ready-made algorithm and making a minimum of changes.
@@ -513,19 +530,18 @@ As for topic extraction, our LLM approach will be compared with BertTopic and LS
 \section{Speaker diarization}
 
 \begin{center}
-    \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |} 
+    \begin{tabular}{ | c | c | c | c |} 
         \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Product} &  \multicolumn{3}{| c |}{Academic} & \multicolumn{3}{| c |}{Committee} \\
+        \multicolumn{1}{| c |}{} & \multicolumn{1}{| c |}{Product} &  \multicolumn{1}{| c |}{Academic} & \multicolumn{1}{| c |}{Committee} \\
         \hline
-        model  & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        model  & \multicolumn{3}{| c |}{DER} \\ 
         \hline
-        whisper-large +  &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
-        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        opt-128 &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        dialoGPT-medium &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        whisper-large & der & der & der \\ 
+        pyannote-diarisation &  der & der & der \\ 
+        bert-large NSP & der & der & der \\ 
         \hline
     \end{tabular}
+    \captionof{table}{Speaker diarization evaluation}
 \end{center}
 
 
@@ -541,25 +557,34 @@ In addition, algorithms for the time of model inference will be performed throug
         \hline
         \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Tiage} &  \multicolumn{3}{| c |}{SuperDialseg}  \\
         \hline
-        model &  Pk & wd & f1 & Pk & wd & f1 \\ 
+        model & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
+        \hline
+        GreedySeg & 0.492 & 0.508 & 0.181 & 0.497 & 0.501 & 0.359 \\
+        TeT & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\
+        TeT + Embedding & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\ 
+        TeT + NSP & 0.425 & 0.439 & 0.285 & 0.522 & 0.531 & 0.201 \\
         \hline
         bert-base NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
         bert-large NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
         opt-128 & Pk & wd & f1 & Pk & wd & f1 \\ 
         dialoGPT-medium & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
+    \captionof{table}{Text datasets segmentation}
 \end{center}
-
-In terms of textual datasets ...
-
+ 
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |} 
         \hline
         \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Product} &  \multicolumn{3}{| c |}{Academic} & \multicolumn{3}{| c |}{Committee} \\
         \hline
-        model  & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        model  & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
+        \hline
+        GreedySeg &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        TeT & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
+        TeT + Embedding & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        TeT + NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\  
         \hline
         bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
         bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
@@ -568,12 +593,12 @@ In terms of textual datasets ...
         dialoGPT-medium &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
+    \captionof{table}{Audio datasets segmentation}
 \end{center}
 
 Speaking about results on audio corpora ...
 
 \section{Topic extraction}
-
 
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | } 
@@ -582,14 +607,15 @@ Speaking about results on audio corpora ...
         \hline
         model & TC & TD & TC & TD \\ 
         \hline
+        BertTopic & c & d & c & d \\
+        LSA  & c & d & c & d \\
+        \hline
         LLaMA3 8B & c & d & c & d \\ 
         Qwen1.5 7B & c & d & c & d \\ 
         Mistral 7B & c & d & c & d \\ 
         \hline
-        BertTopic & c & d & c & d \\
-        LSA  & c & d & c & d \\
-        \hline
     \end{tabular}
+    \captionof{table}{Text datasets topics extraction}
 \end{center}
 
 In terms of textual datasets ...
@@ -601,14 +627,15 @@ In terms of textual datasets ...
         \hline
         model  & TC & TD & TC & TD & TC & TD  \\ 
         \hline
+        BertTopic & c & d & c & d & c & d \\ 
+        LSA & c & d & c & d & c & d \\ 
+        \hline
         LLaMA3 8B & c & d & c & d & c & d \\ 
         Qwen1.5 7B & c & d & c & d & c & d \\ 
         Mistral 7B & c & d & c & d & c & d \\ 
         \hline
-        BertTopic & c & d & c & d & c & d \\ 
-        LSA & c & d & c & d & c & d \\ 
-        \hline
     \end{tabular}
+    \captionof{table}{Audion datasets topics extraction}
 \end{center}
 
 Speaking about results on audio corpora ...
@@ -624,7 +651,7 @@ Additionally, because of the absence of financial opportunities, open-source mod
 
 Summarizing all the results of the article:
 \begin{itemize}
-    \item Various approaches for topic diarization, dialogue segmentation, topic extraction, and topic evolution have been explored;
+    \item Various approaches for topic diarization, dialogue segmentation, topic extraction, and topic evolution have been explored and the best of them were adopted to DTM pipeline;
     \item The search for suitable text and audio datasets was conducted, and the selected datasets were analysed and preprocessed for experiments at all stages and for the entire pipeline.
     \item In the context of the dialog segmentation stage, the optimal open-source solution was identified and the BERT model was subjected to detailed analysis.  This approach has been prepared and integrated into the general pipeline.
     \item At the topic extraction stage, new approaches utilising generative models were investigated. Furthermore, a range of large language models, including LlaMA and Mistral, were examined, along with novel features that enhance the default architecture of the Transformer.

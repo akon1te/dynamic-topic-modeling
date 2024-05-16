@@ -185,8 +185,8 @@
 \def\@year{2024}
 \def\@supervisorTitle{Associate professor NRU HSE - Nizhniy Novgorod}
 \def\@supervisorName{L.V. Savchenko}
-\def\@reviewerTitle{}
-\def\@reviewerName{}
+\def\@reviewerTitle{PhD in Physical and Mathematical Sciences, professor}
+\def\@reviewerName{V.A. Kalyagin}
 \def\@abstract{TODO}
 
 \newcommand{\Year}[1]{\def\@year{#1}}
@@ -250,13 +250,10 @@
 	\fi
 	\hfill
 	\begin{minipage}[t]{0.4\textwidth}
-		Scientific adviser \\
+		Scientific advisor \\
 		\@supervisorTitle
 
-		\vspace{10mm}
-
-		\hrule
-		\vspace{3mm}
+		\vspace{2mm}
 
 		\@supervisorName
 	\end{minipage}
