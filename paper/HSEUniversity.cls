@@ -16,6 +16,7 @@
 \RequirePackage[font=small,skip=4pt]{caption}
 \RequirePackage{graphicx}
 
+\RequirePackage[table]{xcolor}
 %\usepackage{pscyr}						% Красивые русские шрифты
 %\renewcommand{\rmdefault}{ftm} % Включаем Times New Roman
 

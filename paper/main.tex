@@ -503,7 +503,7 @@ This description is included in the theoretical part of the work.
 \textbf{Datasets}
 For the experiments we will use two types of datasets: text dialogues and audio dialogues. 
 For text dialogues, we will use tiage, compiled from the personal chat corpus and manually annotated, and superdialseg, compiled from several smaller datasets: doc2dial and multidoc2dial. 
-As for the audio dialogues, we will use QMSum, which includes the audio recording corpuses - AMI and ISCI and is divided into three types of meetings (product, academic, committee). \\
+As for the audio dialogues, we will use QMSum, which includes the audio recording corpuses - AMI is product meetings and ICSI is academic meetings. \\
 
 \begin{table}[htb]
     \begin{center}
@@ -514,9 +514,8 @@ As for the audio dialogues, we will use QMSum, which includes the audio recordin
             SuperDialseg & 6984/1322/1322 & 13 & 239 \\ 
             Tiage &  7939/-/1000 & 14.7  & - \\ 
             \hline
-            Product Meetings (QMSum) & 137 & 535.6 & - \\ 
-            Academic Meetings (QMSum) & 59 & 819.0 & - \\ 
-            Comemitie Meetings (QMSum) & 36 & 207.7 & - \\
+            Product Meetings (AMI) & 137 & 535.6 & - \\ 
+            Academic Meetings (ICSI) & 59 & 819.0 & - \\ 
             \hline
         \end{tabular}
     \end{center}
@@ -530,15 +529,11 @@ As for topic extraction, our LLM approach will be compared with BertTopic and LS
 \section{Speaker diarization}
 
 \begin{center}
-    \begin{tabular}{ | c | c | c | c |} 
+    \begin{tabular}{ | c | c | c |} 
         \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{1}{| c |}{Product} &  \multicolumn{1}{| c |}{Academic} & \multicolumn{1}{| c |}{Committee} \\
+        \multicolumn{1}{| c |}{model} & \multicolumn{1}{| c |}{AMI} &  \multicolumn{1}{| c |}{ICSI} \\
         \hline
-        model  & \multicolumn{3}{| c |}{DER} \\ 
-        \hline
-        whisper-large & der & der & der \\ 
-        pyannote-diarisation &  der & der & der \\ 
-        bert-large NSP & der & der & der \\ 
+        pyannote-speaker-diarization-3.1  & 18.5 & 17.38 \\  
         \hline
     \end{tabular}
     \captionof{table}{Speaker diarization evaluation}
@@ -561,13 +556,11 @@ In addition, algorithms for the time of model inference will be performed throug
         \hline
         GreedySeg & 0.492 & 0.508 & 0.181 & 0.497 & 0.501 & 0.359 \\
         TeT & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\
-        TeT + Embedding & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\ 
         TeT + NSP & 0.425 & 0.439 & 0.285 & 0.522 & 0.531 & 0.201 \\
         \hline
         bert-base NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
         bert-large NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
         bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
-        opt-128 & Pk & wd & f1 & Pk & wd & f1 \\ 
         dialoGPT-medium & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
@@ -575,22 +568,21 @@ In addition, algorithms for the time of model inference will be performed throug
 \end{center}
  
 \begin{center}
-    \begin{tabular}{ | c | c | c | c | c | c | c | c | c | c |} 
+    \begin{tabular}{ | c | c | c | c | c | c | c | } 
         \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Product} &  \multicolumn{3}{| c |}{Academic} & \multicolumn{3}{| c |}{Committee} \\
+        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{AMI} &  \multicolumn{3}{| c |}{ICSI} \\
         \hline
-        model  & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
+        model  & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
         \hline
-        GreedySeg &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        TeT & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
-        TeT + Embedding & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        TeT + NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\  
+        GreedySeg &  Pk & wd & f1 & Pk & wd & f1 \\ 
+        TeT & Pk & wd & f1 & Pk & wd & f1 \\ 
+        TeT + NSP &  Pk & wd & f1 & Pk & wd & f1 \\  
         \hline
-        bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1  \\ 
-        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        opt-128 &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
-        dialoGPT-medium &  Pk & wd & f1 & Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 \\ 
+        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        opt-128 &  Pk & wd & f1 & Pk & wd & f1 \\ 
+        dialoGPT-medium &  Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Audio datasets segmentation}
@@ -600,6 +592,8 @@ Speaking about results on audio corpora ...
 
 \section{Topic extraction}
 
+\subsection{Zero-shot prompting}
+
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | } 
         \hline
@@ -607,44 +601,70 @@ Speaking about results on audio corpora ...
         \hline
         model & TC & TD & TC & TD \\ 
         \hline
-        BertTopic & c & d & c & d \\
-        LSA  & c & d & c & d \\
+        LSA  & 0.00951 & 0.25824 & -0.01929 & 0.420026 \\
+        BertTopic & \cellcolor{green!60} 0.02751 & 0.34823 & \cellcolor{green!60} 0.01929 & 0.420026 \\
         \hline
-        LLaMA3 8B & c & d & c & d \\ 
-        Qwen1.5 7B & c & d & c & d \\ 
-        Mistral 7B & c & d & c & d \\ 
+        LLaMA3 8B & \cellcolor{green!20} 0.01621 & \cellcolor{green!60} 0.80707 & \cellcolor{green!20} 0.005887 & \cellcolor{green!60} 0.49525 \\ 
+        Qwen1.5 7B & 0.015453 & \cellcolor{green!20} 0.72169 & -0.07682 & \cellcolor{green!20} 0.47777 \\ 
+        Mistral 7B & 0.002248 & 0.63344 & -0.01689 & 0.034215 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Text datasets topics extraction}
 \end{center}
 
-In terms of textual datasets ...
+\begin{center}
+    \begin{tabular}{ | c | c | c | c | c | c | c |} 
+        \hline
+        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Product} &  \multicolumn{2}{| c |}{Academic} \\
+        \hline
+        model  & TC & TD & TC & TD  \\ 
+        \hline
+        LSA & 0.001375 & 0.009648 & -0.00172 & 0.013490 \\ 
+        BertTopic & \cellcolor{green!60} 0.02485 & 0.013996 & \cellcolor{green!60} 0.27210 & 0.029090 \\ 
+        \hline
+        LLaMA3 8B & \cellcolor{green!20} 0.11409 & \cellcolor{green!60} 0.50863 & \cellcolor{green!20} 0.14734 & \cellcolor{green!60} 0.76137\\ 
+        Qwen1.5 & 0.10328 & \cellcolor{green!20}0.38641 & 0.00237 & \cellcolor{green!20}0.7185 \\ 
+        Mistral 7B & 0.084103 & 0.29852 & -0.11318 & 0.5761 \\ 
+        \hline
+    \end{tabular}
+    \captionof{table}{Audio datasets topics extraction}
+\end{center}
+
+The result of experiments in zero-shot that LlaMA 3 8B demonstrate the best performance, it is far ahead of everyone in Topic Diversity and competes in Topic Coherence with BertTopic. 
+A strong drawdown in quality relative to extractive model was also noticed in the article PromptTopic \cite{prompttopic:2023}, where the models also lost to BertTopic in Topic Coherence.
+
+
+\subsection{Few-shot prompting}
 
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c |} 
         \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Product} &  \multicolumn{2}{| c |}{Academic} & \multicolumn{2}{| c |}{Committee} \\
+        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{AMI} &  \multicolumn{2}{| c |}{ICSI} \\
         \hline
-        model  & TC & TD & TC & TD & TC & TD  \\ 
+        LLaMA3 8B zero-shot & 0.11409 & 0.50863 & 0.14734 & 0.76137\\ 
+        LLaMA3 8B few-shot & \cellcolor{green!20} 0.12129 & \cellcolor{green!20} 0.51291 & \cellcolor{red!10} 0.13985 & \cellcolor{green!60} 0.78201\\ 
         \hline
-        BertTopic & c & d & c & d & c & d \\ 
-        LSA & c & d & c & d & c & d \\ 
+        Qwen1.5 zero-shot & 0.10328 & 0.38641 & 0.00237 & 0.7185 \\ 
+        Qwen1.5 few-shot & 0.10190 & 0.38875 &  0.00239 & \cellcolor{green!20}0.7196 \\ 
         \hline
-        LLaMA3 8B & c & d & c & d & c & d \\ 
-        Qwen1.5 7B & c & d & c & d & c & d \\ 
-        Mistral 7B & c & d & c & d & c & d \\ 
+        Mistral zero-shot & 0.084103 & 0.29852 & -0.11318 & 0.5761 \\ 
+        Mistral few-shot & \cellcolor{red!10} 0.065381 & \cellcolor{green!20} 0.31920 & \cellcolor{green!20} -0.08673 & 0.5761 \\ 
         \hline
     \end{tabular}
-    \captionof{table}{Audion datasets topics extraction}
+    \captionof{table}{Comparisons of zero-shot and few-shot results}
 \end{center}
 
-Speaking about results on audio corpora ...
+Experiments with few-short prompts did not show a significant increase in metrics, but it became much easier to get topic words from the model output because the model understood the format in which we wanted to get a list of keywords. 
+As a result, it doesn not mean much on its own, but as part of a pipeline where everything is working together, it's a significant improvement.
+
+\subsection{Fine-tuning}
 
 \section{Topic Evolution}
 
+
 \section{Limitations}
 
-The LLM and other models require a significant amount of computing resources, including GPUs. Due to the limited availability of resources, the models were not larger than 8 billion parameters and did not exceed 16 GB during training and inference at all stages. 
+The LLM and other models require a significant amount of computing resources, including GPUs. Due to the limited availability of resources, the models were not larger than 8 billion parameters and did not exceed 32 GB during training and inference at all stages. 
 Additionally, because of the absence of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT4 or LlaMA2 80b), the experimental results would be considerably more favourable.
 
 \chapter*{Conclusion}

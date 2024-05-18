@@ -50,11 +50,15 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--mode', 
                         help='sequence classification (SC) / next sentence prediction (NSP) / coherence model (CM)', 
                         default='CM')
+    parser.add_argument('-a', '--alpha',
+                        help='choose alpha for alpha-search', 
+                        default=1)
     args = parser.parse_args()
     
     data = args.dataset
     text_encoder_name = args.text_encoder
     mode = args.mode
+    best_alpha = np.float64(args.alpha)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # load encoder model
@@ -79,10 +83,7 @@ if __name__ == "__main__":
             dev_data.append(dialogue)
         else:
             test_data.append(dialogue)
-            
-    # Hyper-parameter (alpha) search on dev set
-    best_alpha, best_pk = alpha_search(
-        dev_data, text_encoder, tokenizer, mode, device, -2, 2, 0.1)
+
     print('[INFO] The loaded text encoder is: ', text_encoder_name)
     print('[INFO] The best hyper-parameter (alpha): ', best_alpha)
 

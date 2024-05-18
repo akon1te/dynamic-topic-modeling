@@ -1,7 +1,8 @@
-DATASET=./datasets/eval/dialseg_711.json
-ENCODER_BERT_MODEL=dse-roberta-base
+DATASET=./datasets/eval/meeting_ami.json
+ENCODER_BERT_MODEL=aws-ai/dse-bert-base
 
-python ./src/segmentation_module/segment_bert.py \
+python src/segmentation/segment_bert.py \
 --dataset $DATASET \
 --text_encoder $ENCODER_BERT_MODEL \
---mode NSP
+--mode SC \
+--alpha 2
