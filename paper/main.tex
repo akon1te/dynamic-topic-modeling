@@ -533,7 +533,7 @@ As for topic extraction, our LLM approach will be compared with BertTopic and LS
         \hline
         \multicolumn{1}{| c |}{model} & \multicolumn{1}{| c |}{AMI} &  \multicolumn{1}{| c |}{ICSI} \\
         \hline
-        pyannote-speaker-diarization-3.1  & 18.5 & 17.38 \\  
+        pyannote-speaker-diarization-3.1 & 18.5 & 17.38 \\  
         \hline
     \end{tabular}
     \captionof{table}{Speaker diarization evaluation}
@@ -555,13 +555,12 @@ In addition, algorithms for the time of model inference will be performed throug
         model & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
         \hline
         GreedySeg & 0.492 & 0.508 & 0.181 & 0.497 & 0.501 & 0.359 \\
-        TeT & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\
-        TeT + NSP & 0.425 & 0.439 & 0.285 & 0.522 & 0.531 & 0.201 \\
-        \hline
-        bert-base NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
-        dialoGPT-medium & Pk & wd & f1 & Pk & wd & f1 \\ 
+        GraphSeg & 0.462 & 0.466 & 0.239 & 0.496 & 0.515 & 0.238 \\
+        TextTilling & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\
+        TeT + BERT & 0.425 & 0.439 & 0.285 & 0.522 & 0.531 & 0.201 \\
+        \hline\ 
+        Our solution BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        Our solution BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Text datasets segmentation}
@@ -574,21 +573,20 @@ In addition, algorithms for the time of model inference will be performed throug
         \hline
         model  & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
         \hline
-        GreedySeg &  Pk & wd & f1 & Pk & wd & f1 \\ 
-        TeT & Pk & wd & f1 & Pk & wd & f1 \\ 
-        TeT + NSP &  Pk & wd & f1 & Pk & wd & f1 \\  
+        GreedySeg & 0.885 & 0.792 & 0.0641 & 0.762 & 0.730 & 0.109 \\
+        GraphSeg & Pk & wd & f1 & Pk & wd & f1 \\
+        TextTilling & Pk & wd & f1 & Pk & wd & f1 \\
+        TeT + BERT & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
-        bert-base NSP &  Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-base CLS &  Pk & wd & f1 & Pk & wd & f1 \\ 
-        bert-large NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        opt-128 &  Pk & wd & f1 & Pk & wd & f1 \\ 
-        dialoGPT-medium &  Pk & wd & f1 & Pk & wd & f1 \\ 
+        Our solution BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        Our solution BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\  
         \hline
     \end{tabular}
     \captionof{table}{Audio datasets segmentation}
 \end{center}
 
-Speaking about results on audio corpora ...
+The selected solution shows the best metrics on the datasets we selected. It is important to understand that we have researched open source solutions.
+
 
 \section{Topic extraction}
 
@@ -599,14 +597,14 @@ Speaking about results on audio corpora ...
         \hline
         \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Tiage} &  \multicolumn{2}{| c |}{SuperDialseg}  \\
         \hline
-        model & TC & TD & TC & TD \\ 
+        model & TD & TC & TD & TC  \\ 
         \hline
-        LSA  & 0.00951 & 0.25824 & -0.01929 & 0.420026 \\
-        BertTopic & \cellcolor{green!60} 0.02751 & 0.34823 & \cellcolor{green!60} 0.01929 & 0.420026 \\
+        LSA  & 0.25824 & 0.00951 & 0.420026 & -0.01929 \\
+        BertTopic & 0.34823 & \cellcolor{green!60} 0.02751 & 0.420026 & \cellcolor{green!60} 0.01929 \\
         \hline
-        LLaMA3 8B & \cellcolor{green!20} 0.01621 & \cellcolor{green!60} 0.80707 & \cellcolor{green!20} 0.005887 & \cellcolor{green!60} 0.49525 \\ 
-        Qwen1.5 7B & 0.015453 & \cellcolor{green!20} 0.72169 & -0.07682 & \cellcolor{green!20} 0.47777 \\ 
-        Mistral 7B & 0.002248 & 0.63344 & -0.01689 & 0.034215 \\ 
+        LLaMA3 8B & \cellcolor{green!60} 0.80707 & \cellcolor{green!20} 0.01621 & \cellcolor{green!60} 0.49525 & \cellcolor{green!20} 0.005887 \\ 
+        Qwen1.5 7B & \cellcolor{green!20} 0.72169  & 0.015453 & \cellcolor{green!20} 0.47777  & -0.07682\\ 
+        Mistral 7B & 0.63344 & 0.002248 & 0.34215 & -0.01689 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Text datasets topics extraction}
@@ -617,14 +615,14 @@ Speaking about results on audio corpora ...
         \hline
         \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Product} &  \multicolumn{2}{| c |}{Academic} \\
         \hline
-        model  & TC & TD & TC & TD  \\ 
+        
         \hline
-        LSA & 0.001375 & 0.009648 & -0.00172 & 0.013490 \\ 
-        BertTopic & \cellcolor{green!60} 0.02485 & 0.013996 & \cellcolor{green!60} 0.27210 & 0.029090 \\ 
+        LSA & 0.009648 & 0.001375 & 0.013490 & -0.00172 \\ 
+        BertTopic & 0.013996 & \cellcolor{green!60} 0.02485 & 0.029090 & \cellcolor{green!60} 0.27210 \\ 
         \hline
-        LLaMA3 8B & \cellcolor{green!20} 0.11409 & \cellcolor{green!60} 0.50863 & \cellcolor{green!20} 0.14734 & \cellcolor{green!60} 0.76137\\ 
-        Qwen1.5 & 0.10328 & \cellcolor{green!20}0.38641 & 0.00237 & \cellcolor{green!20}0.7185 \\ 
-        Mistral 7B & 0.084103 & 0.29852 & -0.11318 & 0.5761 \\ 
+        LLaMA3 8B & \cellcolor{green!60} 0.50863 & \cellcolor{green!20} 0.11409 & \cellcolor{green!60} 0.76137 & \cellcolor{green!20} 0.14734 \\ 
+        Qwen1.5  & \cellcolor{green!20} 0.38641 & 0.10328 & \cellcolor{green!20} 0.7185  & 0.00237\\ 
+        Mistral 7B & 0.29852 & 0.084103 & 0.5761 & -0.11318 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Audio datasets topics extraction}
@@ -641,14 +639,16 @@ A strong drawdown in quality relative to extractive model was also noticed in th
         \hline
         \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{AMI} &  \multicolumn{2}{| c |}{ICSI} \\
         \hline
-        LLaMA3 8B zero-shot & 0.11409 & 0.50863 & 0.14734 & 0.76137\\ 
-        LLaMA3 8B few-shot & \cellcolor{green!20} 0.12129 & \cellcolor{green!20} 0.51291 & \cellcolor{red!10} 0.13985 & \cellcolor{green!60} 0.78201\\ 
+        model & TD & TC & TD & TC  \\ 
         \hline
-        Qwen1.5 zero-shot & 0.10328 & 0.38641 & 0.00237 & 0.7185 \\ 
-        Qwen1.5 few-shot & 0.10190 & 0.38875 &  0.00239 & \cellcolor{green!20}0.7196 \\ 
+        LLaMA3 zero-shot & 0.50863 & 0.11409 & 0.76137 & 0.14734 \\ 
+        LLaMA3 few-shot & \cellcolor{green!20} 0.51291 & \cellcolor{green!20} 0.12129 & \cellcolor{green!60} 0.78201 & \cellcolor{red!10} 0.13985 \\ 
         \hline
-        Mistral zero-shot & 0.084103 & 0.29852 & -0.11318 & 0.5761 \\ 
-        Mistral few-shot & \cellcolor{red!10} 0.065381 & \cellcolor{green!20} 0.31920 & \cellcolor{green!20} -0.08673 & 0.5761 \\ 
+        Qwen1.5 zero-shot & 0.38641 & 0.10328 & 0.7185 & 0.00237 \\ 
+        Qwen1.5 few-shot & 0.38875 & 0.10190 & \cellcolor{green!20}0.7196 & 0.00239 \\ 
+        \hline
+        Mistral zero-shot & 0.29852 & 0.084103 & 0.5761 & -0.11318 \\ 
+        Mistral few-shot & \cellcolor{green!20} 0.31920 & \cellcolor{red!10} 0.065381 & 0.5761 & \cellcolor{green!20} -0.08673 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Comparisons of zero-shot and few-shot results}
@@ -665,17 +665,15 @@ As a result, it doesn not mean much on its own, but as part of a pipeline where 
 \section{Limitations}
 
 The LLM and other models require a significant amount of computing resources, including GPUs. Due to the limited availability of resources, the models were not larger than 8 billion parameters and did not exceed 32 GB during training and inference at all stages. 
-Additionally, because of the absence of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT4 or LlaMA2 80b), the experimental results would be considerably more favourable.
+Additionally, because of the absence of financial opportunities, open-source models were employed in the work. Should it be possible to reproduce all stages on more advanced models (such as GPT4 or LlaMA3 80b), the experimental results would be considerably more favourable.
 
 \chapter*{Conclusion}
 
 Summarizing all the results of the article:
 \begin{itemize}
-    \item Various approaches for topic diarization, dialogue segmentation, topic extraction, and topic evolution have been explored and the best of them were adopted to DTM pipeline;
-    \item The search for suitable text and audio datasets was conducted, and the selected datasets were analysed and preprocessed for experiments at all stages and for the entire pipeline.
-    \item In the context of the dialog segmentation stage, the optimal open-source solution was identified and the BERT model was subjected to detailed analysis.  This approach has been prepared and integrated into the general pipeline.
-    \item At the topic extraction stage, new approaches utilising generative models were investigated. Furthermore, a range of large language models, including LlaMA and Mistral, were examined, along with novel features that enhance the default architecture of the Transformer.
-    \item Topic Evolution
+    \item Suitable datasets were selected, experiments were carried out on them at all stages and quality metrics of the selected algorithms were obtained;
+    \item Among the available solutions, the best available metrics were selected. Experiments were carried out with each of the algorithms at each stage on ready-made models, pre-trained and trained from scratch. The best models were added to the final pipeline;;
+    \item At the topic extraction stage, a study was conducted on the use of LLM. The best open-source LLMs were selected for experiments with zero-shot, feat-shot and fine-tuning. The generative approach using LLM shows the results of the best available extractive solutions for topic modeling;
     \item A suitable set of metrics was identified and selected to evaluate the quality of each stage. In order to utilise the metrics, a library with an implementation was Investigated and integrated into pipeline.
 \end{itemize}
 
