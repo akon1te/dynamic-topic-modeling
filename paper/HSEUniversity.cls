@@ -30,6 +30,7 @@
 \RequirePackage{tocloft}
 \RequirePackage{titletoc}
 \RequirePackage{lmodern}
+\RequirePackage{multirow}
 
 \RequirePackage{amsmath}
 \RequirePackage{amsfonts}

@@ -491,7 +491,13 @@ In this case the prompt for LLM will look like this:
 
 \section{Topic Evolution}
 
+In the pipeline, topic evolution can be used in two formats. 
+The first format allows you to analyze the change of topics in a single dialog. In this format, graphs of changes in the set of topics in the order of the segments will be plotted. 
 
+The second format analyzes the entire dataset. 
+In this case, either a special mark will be used for timestamp analysis along with each dialog, or the analysis will be performed in the order in which the samples are located in the dataset.
+
+With a large number of topic words, the N most common ones will be selected to visualize their changes.
 
 \chapter{Experiments}
 
@@ -533,12 +539,17 @@ As for topic extraction, our LLM approach will be compared with BertTopic and LS
         \hline
         \multicolumn{1}{| c |}{model} & \multicolumn{1}{| c |}{AMI} &  \multicolumn{1}{| c |}{ICSI} \\
         \hline
-        pyannote-speaker-diarization-3.1 & 18.5 & 17.38 \\  
+        pyannote-speaker-diarization-2.1 & \cellcolor{green!20} 18.9 & 16.4 \\  
+        pyannote-speaker-diarization-3.1 & 18.8 & \cellcolor{green!20} 16.7 \\
+        whisper + pretrain embeds & \multirow{2}{*}{14.7} & \multirow{2}{*}{13.9} \\
+        + agglomerative cluter & & \\
         \hline
     \end{tabular}
     \captionof{table}{Speaker diarization evaluation}
 \end{center}
 
+The finished models from pyannote showed better results than the assembled pipeline from whisper and pretraining embeddings. 
+Therefore, it was decided to include pyannote models in the final pipeline.
 
 \section{Text clustering}
 
@@ -550,39 +561,32 @@ In addition, algorithms for the time of model inference will be performed throug
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
         \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{Tiage} &  \multicolumn{3}{| c |}{SuperDialseg}  \\
-        \hline
-        model & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
+        \multirow{2}{*}{models} & \multicolumn{3}{| c |}{Tiage} &  \multicolumn{3}{| c |}{SuperDialseg}  \\
+        \cline{2-7}
+         & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
         \hline
         GreedySeg & 0.492 & 0.508 & 0.181 & 0.497 & 0.501 & 0.359 \\
         GraphSeg & 0.462 & 0.466 & 0.239 & 0.496 & 0.515 & 0.238 \\
         TextTilling & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\
         TeT + BERT & 0.425 & 0.439 & 0.285 & 0.522 & 0.531 & 0.201 \\
         \hline\ 
-        Our solution BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        Our solution BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
+        Our solution+BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        Our solution+BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
-    \end{tabular}
-    \captionof{table}{Text datasets segmentation}
-\end{center}
- 
-\begin{center}
-    \begin{tabular}{ | c | c | c | c | c | c | c | } 
-        \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{3}{| c |}{AMI} &  \multicolumn{3}{| c |}{ICSI} \\
-        \hline
-        model  & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
+        \multirow{2}{*}{models} & \multicolumn{3}{| c |}{AMI} & \multicolumn{3}{| c |}{ICSI} \\
+        \cline{2-7}
+        & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
         \hline
         GreedySeg & 0.885 & 0.792 & 0.0641 & 0.762 & 0.730 & 0.109 \\
         GraphSeg & Pk & wd & f1 & Pk & wd & f1 \\
         TextTilling & Pk & wd & f1 & Pk & wd & f1 \\
         TeT + BERT & Pk & wd & f1 & Pk & wd & f1 \\ 
         \hline
-        Our solution BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        Our solution BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\  
+        Our solution+BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
+        Our solution+BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\  
         \hline
     \end{tabular}
-    \captionof{table}{Audio datasets segmentation}
+    \captionof{table}{Dialogue segmentation experiments}
 \end{center}
 
 The selected solution shows the best metrics on the datasets we selected. It is important to understand that we have researched open source solutions.
@@ -595,9 +599,9 @@ The selected solution shows the best metrics on the datasets we selected. It is 
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | } 
         \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Tiage} &  \multicolumn{2}{| c |}{SuperDialseg}  \\
-        \hline
-        model & TD & TC & TD & TC  \\ 
+        \multirow{2}{*}{models} & \multicolumn{2}{| c |}{Tiage} &  \multicolumn{2}{| c |}{SuperDialseg}  \\
+        \cline{2-5}
+         & TD & TC & TD & TC  \\ 
         \hline
         LSA  & 0.25824 & 0.00951 & 0.420026 & -0.01929 \\
         BertTopic & 0.34823 & \cellcolor{green!60} 0.02751 & 0.420026 & \cellcolor{green!60} 0.01929 \\
@@ -606,16 +610,9 @@ The selected solution shows the best metrics on the datasets we selected. It is 
         Qwen1.5 7B & \cellcolor{green!20} 0.72169  & 0.015453 & \cellcolor{green!20} 0.47777  & -0.07682\\ 
         Mistral 7B & 0.63344 & 0.002248 & 0.34215 & -0.01689 \\ 
         \hline
-    \end{tabular}
-    \captionof{table}{Text datasets topics extraction}
-\end{center}
-
-\begin{center}
-    \begin{tabular}{ | c | c | c | c | c | c | c |} 
-        \hline
-        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{Product} &  \multicolumn{2}{| c |}{Academic} \\
-        \hline
-        
+        \multirow{2}{*}{models} & \multicolumn{2}{| c |}{AMI} &  \multicolumn{2}{| c |}{ICSI} \\
+        \cline{2-5}
+         & TD & TC & TD & TC  \\ 
         \hline
         LSA & 0.009648 & 0.001375 & 0.013490 & -0.00172 \\ 
         BertTopic & 0.013996 & \cellcolor{green!60} 0.02485 & 0.029090 & \cellcolor{green!60} 0.27210 \\ 
@@ -625,14 +622,54 @@ The selected solution shows the best metrics on the datasets we selected. It is 
         Mistral 7B & 0.29852 & 0.084103 & 0.5761 & -0.11318 \\ 
         \hline
     \end{tabular}
-    \captionof{table}{Audio datasets topics extraction}
+    \captionof{table}{Dialogue topics extraction experiments}
 \end{center}
 
 The result of experiments in zero-shot that LlaMA 3 8B demonstrate the best performance, it is far ahead of everyone in Topic Diversity and competes in Topic Coherence with BertTopic. 
-A strong drawdown in quality relative to extractive model was also noticed in the article PromptTopic \cite{prompttopic:2023}, where the models also lost to BertTopic in Topic Coherence.
+A strong drawdown in quality relative to extractive model was also noticed in the article PromptTopic \cite{prompttopic:2023}, where the models also lost to BertTopic in Topic Coherence. \\
 
+The main problem at this stage is the problems with the format of the topic words themselves and the formats of the generated output of the model. 
+Firstly, the model sometimes gives out not only the word itself but also an explanation of why, there are also options when the model outputs whole sentences or phrases of 3 or more words, which does not suit our task. \\
+For example:
+
+\begin{lstlisting}
+    good answer for dialogue: 
+    car, summer, camp.   
+    
+    possible bad variants:
+    -------------------
+    car (because they travel by car)
+    summer (because all dialogue about summer)
+    camp (because the spent a lot of time in camp)
+    -------------------
+    we take a car
+    spent the whole summer together
+    camp was an important place
+    -------------------
+\end{lstlisting}
+
+
+Moreover, the zero-shot format has problems with the format of the output generated sequence. 
+The model with the same prompt sometimes produces a different format and parsing topic words becomes much more difficult.
+
+\begin{lstlisting}
+    possible bad variants:
+    -------------------    
+    1. car
+    2. summer
+    3. camp
+    -------------------
+    * car
+    * summer
+    * camp
+    -------------------
+\end{lstlisting}
+
+Consequently, it was important to use different techniques "to embrace" model the correct formats for convenient operation in the whole pipeline.
 
 \subsection{Few-shot prompting}
+
+The few-short approach was explained in the chapter of Methodology.
 
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c |} 
@@ -648,10 +685,10 @@ A strong drawdown in quality relative to extractive model was also noticed in th
         Qwen1.5 few-shot & 0.38875 & 0.10190 & \cellcolor{green!20}0.7196 & 0.00239 \\ 
         \hline
         Mistral zero-shot & 0.29852 & 0.084103 & 0.5761 & -0.11318 \\ 
-        Mistral few-shot & \cellcolor{green!20} 0.31920 & \cellcolor{red!10} 0.065381 & 0.5761 & \cellcolor{green!20} -0.08673 \\ 
+        Mistral few-shot & \cellcolor{green!20} 0.31920 & \cellcolor{red!10} 0.065381 & 0.5761 & \cellcolor{green!20} -0.008673 \\ 
         \hline
     \end{tabular}
-    \captionof{table}{Comparisons of zero-shot and few-shot results}
+    \captionof{table}{Comparisons of models in zero-shot and few-shot}
 \end{center}
 
 Experiments with few-short prompts did not show a significant increase in metrics, but it became much easier to get topic words from the model output because the model understood the format in which we wanted to get a list of keywords. 
@@ -659,7 +696,48 @@ As a result, it doesn not mean much on its own, but as part of a pipeline where 
 
 \subsection{Fine-tuning}
 
+It was also decided to carry out fine-tuning of the models on the selected train part of the datasets (tiage, superseg). 
+The main point of this stage is to train the model for a given topic words format and their output format, as in few-shot. 
+In addition, it is possible to improve the quality metrics of the models.
+
+\begin{center}
+    \begin{tabular}{ | c | c | c | c | c | c | c |} 
+        \hline
+        \multicolumn{1}{| c |}{} & \multicolumn{2}{| c |}{AMI} &  \multicolumn{2}{| c |}{ICSI} \\
+        \hline
+        model & TD & TC & TD & TC  \\ 
+        \hline
+        LLaMA3 few-shot & 0.51291 & 0.12129 & 0.78201 & 0.13985 \\ 
+        LLaMA3 fine-tuning & \cellcolor{green!30} 0.53812 & \cellcolor{green!20} 0.13329 & \cellcolor{green!20} 0.79854 & \cellcolor{green!30} 0.15636 \\
+        \hline
+        Qwen1.5 few-shot & 0.38875 & 0.10190 & 0.71960 & 0.00239 \\ 
+        Qwen1.5 fine-tuning & \cellcolor{green!30} 0.39471 & \cellcolor{green!20} 0.11004 & \cellcolor{green!20} 0.72041 & 0.00241 \\ 
+        \hline
+        Mistral few-shot & 0.31920 & 0.065381 & 0.57617 & -0.008673 \\ 
+        Mistral fine-tuning & \cellcolor{green!10} 0.31998 & 0.065421 & 0.57531 & \cellcolor{green!50} 0.00031 \\ 
+        \hline
+    \end{tabular}
+    \captionof{table}{Comparisons of models in zero-shot and after fine-tuning}
+\end{center}
+
+As with few-shot, the metrics have increased, but now it is convenient to work with the model in the whole pipeline, because now it is easy to understand the "behavior" of the model during response generation.
+In addition, the increase in the metric comes from the fact that it was possible to parse all samples, unlike some in zero-shot and few-shot.
+
 \section{Topic Evolution}
+
+In this section, we will show examples of the results of analyzing changes in topics over time.
+All examples will be presented on the AMI dataset.
+
+
+Topic evolution over time on one dialogue:
+
+
+
+
+Topic evolution over time on dataset:
+
+
+
 
 
 \section{Limitations}
