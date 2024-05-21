@@ -551,12 +551,10 @@ As for topic extraction, our LLM approach will be compared with BertTopic and LS
 The finished models from pyannote showed better results than the assembled pipeline from whisper and pretraining embeddings. 
 Therefore, it was decided to include pyannote models in the final pipeline.
 
-\section{Text clustering}
+\section{Dialogue Segmenentation}
 
 The input data at this stage are dialogues divided into separate utterances of the participants ${ut_1, ut_2, \dots, ut_n}$.
 At this stage, experiments will be conducted using the encoder model for the Utterance-Coherence Scoring algorithm. 
-In addition, algorithms for the time of model inference will be performed throughout the pipeline to select the fastest solution.
-
 
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
@@ -567,29 +565,30 @@ In addition, algorithms for the time of model inference will be performed throug
         \hline
         GreedySeg & 0.492 & 0.508 & 0.181 & 0.497 & 0.501 & 0.359 \\
         GraphSeg & 0.462 & 0.466 & 0.239 & 0.496 & 0.515 & 0.238 \\
-        TextTilling & 0.469 & 0.488 & 0.204 & 0.446 & 0.458 & 0.378 \\
-        TeT + BERT & 0.425 & 0.439 & 0.285 & 0.522 & 0.531 & 0.201 \\
+        TextTilling & 0.469 & 0.488 & 0.204 & \cellcolor{green!20} 0.446 & \cellcolor{green!20} 0.458 & \cellcolor{green!20} 0.378 \\
+        TeT + BERT & \cellcolor{green!20} 0.425 & \cellcolor{green!20} 0.439 & \cellcolor{green!20} 0.285 & 0.522 & 0.531 & 0.201 \\
         \hline\ 
-        Our solution+BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        Our solution+BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\ 
+        CohScoring+BERT-NSP & 0.4465 & 0.4575 & 0.267 & 0.5071 & 0.5219 & 0.205 \\ 
+        CohScoring+BERT-NSP fine-tune & \cellcolor{green!40} 0.3981 & \cellcolor{green!40} 0.4018 & \cellcolor{green!40} 0.32 & \cellcolor{green!40} 0.4361 & \cellcolor{green!40} 0.44510 & \cellcolor{green!40} 0.285 \\ 
         \hline
         \multirow{2}{*}{models} & \multicolumn{3}{| c |}{AMI} & \multicolumn{3}{| c |}{ICSI} \\
         \cline{2-7}
         & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
         \hline
-        GreedySeg & 0.885 & 0.792 & 0.0641 & 0.762 & 0.730 & 0.109 \\
-        GraphSeg & Pk & wd & f1 & Pk & wd & f1 \\
+        GreedySeg & 0.885 & 0.792 & 0.3641 & 0.762 & 0.730 & 0.309 \\
+        GraphSeg & 0.875 & 0.750 & 0.422 & 0.810 & 0.756 & 0.275 \\
         TextTilling & Pk & wd & f1 & Pk & wd & f1 \\
-        TeT + BERT & Pk & wd & f1 & Pk & wd & f1 \\ 
+        TeT + BERT & Pk & wd & 0.443 & Pk & wd & 0.158 \\ 
         \hline
-        Our solution+BERT-NSP & Pk & wd & f1 & Pk & wd & f1 \\ 
-        Our solution+BERT-CLS & Pk & wd & f1 & Pk & wd & f1 \\  
+        CohScoring+BERT-NSP & \cellcolor{green!20} 0.6447 & \cellcolor{green!20} 0.7394 & \cellcolor{green!20} 0.551 & \cellcolor{green!20} 0.6148 & \cellcolor{green!20} 0.6731 & \cellcolor{green!20} 0.779 \\ 
+        CohScoring+BERT-NSP fine-tune & \cellcolor{green!40} 0.5854 & \cellcolor{green!40} 0.6032 & \cellcolor{green!40} 0.587 & \cellcolor{green!40} 0.5842 & \cellcolor{green!40} 0.5932 & \cellcolor{green!40} 0.815 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Dialogue segmentation experiments}
 \end{center}
 
-The selected solution shows the best metrics on the datasets we selected. It is important to understand that we have researched open source solutions.
+The selected solution shows the best metrics on the datasets we selected. 
+It is important to understand that we have researched open source solutions.
 
 
 \section{Topic extraction}
