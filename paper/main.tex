@@ -727,17 +727,50 @@ In addition, the increase in the metric comes from the fact that it was possible
 In this section, we will show examples of the results of analyzing changes in topics over time.
 All examples will be presented on the AMI dataset.
 
+\begin{center}
+    \centering
+    Topic evolution over time on one dialogue:
+\end{center}
 
-Topic evolution over time on one dialogue:
+\begin{lstlisting}
+    dialogue_topics_analyze(dialogue, 
+                            n_topic_words)
+                        \end{lstlisting}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{img/output.png}
+    \caption{Topic evolution over time on one dialogue}
+\end{figure}
+
+The picture shows the change of themes over time. 
+There were 5 segments in this dialog, so 5 timestamps. \\
+
+\begin{center}
+    \centering
+    Topic evolution over time on dataset:
+\end{center}
+
+\begin{lstlisting}
+    corpus_topics_analyze(dataset, n_topic_words,
+                          top_popular=8, time_range=50)
+\end{lstlisting}
 
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{img/ami_topics_evol.png}
+    \caption{Topic evolution in AMI dataset}
+\end{figure}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{img/topic_evol_icsi.png}
+    \caption{Topic evolution in ICSI dataset}
+\end{figure}
 
-Topic evolution over time on dataset:
-
-
-
-
+In analyzing the evolution of topics on the dataset, top\_popular is also selected, because there are many more topics on one dialog and it is impossible to analyze everything at once. 
+In addition, the time\_range parameter is responsible for reducing time intervals for more convenient analysis.
 
 \section{Limitations}
 
