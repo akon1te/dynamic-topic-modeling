@@ -319,7 +319,7 @@ A decoder is trained to predict the corresponding text caption, intermixed with 
 \label{seg}
 
 The dialogue segmentation stage represents the initial stage for textual type of data. 
-The result is a set of utterance indices that indicate the beginning of a thematically related group. 
+The result is a set of utterance indices that indicate the beginning of a topicaly related group. 
 
 In accordance with the majority of previous studies, we have utilise the best open-source solution based on the presented in papers metrics. 
 It is algorithm from Improving Unsupervised Dialogue Topic Segmentation with Utterance-Pair Coherence Scoring \cite{depthscore:2021} 
@@ -336,7 +336,7 @@ In more detail, the positive instances $(s_{i}, s_{t+i})$ and negative instances
 \end{center}
 where the symbols $[CLS]$ and $[SEP]$ represent special tokens in BERT. 
 
-In order to indicate the thematic similarity of two statements in a dialogue, the $[CLS]$ token is employed, which performs a similar role in the usual BERT. 
+In order to indicate the topic similarity of two statements in a dialogue, the $[CLS]$ token is employed, which performs a similar role in the usual BERT. 
 The resulting value is subjected to a linear dictionary and a final similarity value is obtained, which is then utilised to calculate Coherence scores.
 
 \subsection{Depth Scores}
@@ -350,8 +350,8 @@ The depth score is calculated as shows below:
 \end{center}
 where $h_{l}, h_{r}$ - the highest cs for $i$ pair in choosen range.
 
-The greater the depth score between two statements, the less likely it is that they share a thematic relationship. 
-To identify the pairs along which the boundaries of the thematic segments lie, the threshold value is calculated as follows: $threshold = \mu - \frac{\sigma}{2}$, where $\mu$ is the average value and $\sigma$ is the standard deviation. Pairs with a depth score above the $threshold$ value will be choosen as boundaries.
+The greater the depth score between two statements, the less likely it is that they share a topic relationship. 
+To identify the pairs along which the boundaries of the topic segments lie, the threshold value is calculated as follows: $threshold = \mu - \frac{\sigma}{2}$, where $\mu$ is the average value and $\sigma$ is the standard deviation. Pairs with a depth score above the $threshold$ value will be choosen as boundaries.
 
 
 \section{Evaluation Metrics}
@@ -400,7 +400,7 @@ After defining the basic segmentation algorithm, it is worth talking about evalu
 As for the quality evaluation of the extracted topics, we will use two metrics: Topic coherence and Topic diversity
 \begin{itemize}
     \item \textbf{Topic diversity} \cite{topicdiversity:2019} is a metric that assesses the ratio of unique keywords across all topic representations. This metric is used to measure the capabilities of a topic model covering a wide range of topics. The diversity score is a value between 0 and 1, with a score of 0 indicating repetitive topics and a score of 1 indicating diverse topics.
-    \item \textbf{Topic coherence} \cite{topiccoh:2009} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for thematic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
+    \item \textbf{Topic coherence} \cite{topiccoh:2009} is a measure of the degree of interconnection of words within a topic. In our experiments, we employed normalized point-to-point mutual information (PMI) as a metric for topic consistency. A higher score for a given name indicates greater consistency, with an absolute correlation estimated at 1 point.
 \end{itemize}
 
 
@@ -408,7 +408,7 @@ As for the quality evaluation of the extracted topics, we will use two metrics: 
 
 \section{Pipeline configuration}
 
-The pipeline of dynamic thematic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
+The pipeline of dynamic topic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
 These include ASR, dialogue segmentation, topic extraction and topic evolution. 
 
 \begin{figure}[h]
@@ -420,6 +420,10 @@ These include ASR, dialogue segmentation, topic extraction and topic evolution.
 All the models in the pipeline were taken from the \href{https://huggingface.co/}{HuggingFace} hub. 
 Tools from \href{https://huggingface.co/docs/transformers/index}{transformers}, which is also part of HuggingFace, 
 will be used to create the pipeline.
+
+The main stage to be investigated is topic extraction. 
+The use of LLM (generative approach) for topic modeling began to be investigated quite recently. 
+For audio dialogues, which are quite different from text ones, it was not used at all.
 
 \section{Speaker Diarization}
 
@@ -489,6 +493,8 @@ In this case the prompt for LLM will look like this:
     <|assistant|>
 \end{lstlisting}
 
+
+
 \section{Topic Evolution}
 
 In the pipeline, topic evolution can be used in two formats. 
@@ -556,6 +562,7 @@ Therefore, it was decided to include pyannote models in the final pipeline.
 The input data at this stage are dialogues divided into separate utterances of the participants ${ut_1, ut_2, \dots, ut_n}$.
 At this stage, experiments will be conducted using the encoder model for the Utterance-Coherence Scoring algorithm. 
 
+
 \begin{center}
     \begin{tabular}{ | c | c | c | c | c | c | c | c |} 
         \hline
@@ -568,8 +575,8 @@ At this stage, experiments will be conducted using the encoder model for the Utt
         TextTilling & 0.469 & 0.488 & 0.204 & \cellcolor{green!20} 0.446 & \cellcolor{green!20} 0.458 & \cellcolor{green!20} 0.378 \\
         TeT + BERT & \cellcolor{green!20} 0.425 & \cellcolor{green!20} 0.439 & \cellcolor{green!20} 0.285 & 0.522 & 0.531 & 0.201 \\
         \hline\ 
-        CohScoring+BERT-NSP & 0.4465 & 0.4575 & 0.267 & 0.5071 & 0.5219 & 0.205 \\ 
-        CohScoring+BERT-NSP fine-tune & \cellcolor{green!40} 0.3981 & \cellcolor{green!40} 0.4018 & \cellcolor{green!40} 0.32 & \cellcolor{green!40} 0.4361 & \cellcolor{green!40} 0.44510 & \cellcolor{green!40} 0.285 \\ 
+        Our method & 0.4465 & 0.4575 & 0.367 & 0.5071 & 0.5219 & 0.430 \\ 
+        Our method + fine-tune & \cellcolor{green!40} 0.4094 & \cellcolor{green!40} 0.4048 & \cellcolor{green!40} 0.7374 & \cellcolor{green!40} 0.4361 & \cellcolor{green!40} 0.44510 & \cellcolor{green!40} 0.7421 \\ 
         \hline
         \multirow{2}{*}{models} & \multicolumn{3}{| c |}{AMI} & \multicolumn{3}{| c |}{ICSI} \\
         \cline{2-7}
@@ -580,8 +587,8 @@ At this stage, experiments will be conducted using the encoder model for the Utt
         TextTilling & Pk & wd & f1 & Pk & wd & f1 \\
         TeT + BERT & Pk & wd & 0.443 & Pk & wd & 0.158 \\ 
         \hline
-        CohScoring+BERT-NSP & \cellcolor{green!20} 0.6447 & \cellcolor{green!20} 0.7394 & \cellcolor{green!20} 0.551 & \cellcolor{green!20} 0.6148 & \cellcolor{green!20} 0.6731 & \cellcolor{green!20} 0.779 \\ 
-        CohScoring+BERT-NSP fine-tune & \cellcolor{green!40} 0.5854 & \cellcolor{green!40} 0.6032 & \cellcolor{green!40} 0.587 & \cellcolor{green!40} 0.5842 & \cellcolor{green!40} 0.5932 & \cellcolor{green!40} 0.815 \\ 
+        Our method & \cellcolor{green!20} 0.6447 & \cellcolor{green!20} 0.7394 & \cellcolor{green!20} 0.551 & \cellcolor{green!20} 0.6148 & \cellcolor{green!20} 0.6731 & \cellcolor{green!20} 0.779 \\ 
+        Our method + fine-tune & \cellcolor{green!40} 0.5279 & \cellcolor{green!40} 0.6932 & \cellcolor{green!40} 0.610 & \cellcolor{green!40} 0.5842 & \cellcolor{green!40} 0.5932 & \cellcolor{green!40} 0.815 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Dialogue segmentation experiments}
@@ -592,6 +599,8 @@ It is important to understand that we have researched open source solutions.
 
 
 \section{Topic extraction}
+
+At this stage, we conducted the most experiments, ready-made solutions were used or adapted for all stages, at the topic extraction stage we used LLM without relying on ready-made solutions.
 
 \subsection{Zero-shot prompting}
 
@@ -616,11 +625,12 @@ It is important to understand that we have researched open source solutions.
         LSA & 0.009648 & 0.001375 & 0.013490 & -0.00172 \\ 
         BertTopic & 0.013996 & \cellcolor{green!60} 0.02485 & 0.029090 & \cellcolor{green!60} 0.27210 \\ 
         \hline
-        LLaMA3 8B & \cellcolor{green!60} 0.50863 & \cellcolor{green!20} 0.11409 & \cellcolor{green!60} 0.76137 & \cellcolor{green!20} 0.14734 \\ 
-        Qwen1.5  & \cellcolor{green!20} 0.38641 & 0.10328 & \cellcolor{green!20} 0.7185  & 0.00237\\ 
-        Mistral 7B & 0.29852 & 0.084103 & 0.5761 & -0.11318 \\ 
+        LLaMA3 8B & \cellcolor{green!60} 0.50863 & \cellcolor{green!20} 0.01140 & \cellcolor{green!60} 0.76137 & \cellcolor{green!20} 0.14734 \\ 
+        Qwen1.5  & \cellcolor{green!20} 0.38641 & 0.01032 & \cellcolor{green!20} 0.7185  & 0.00237\\ 
+        Mistral 7B & 0.29852 & 0.00841 & 0.5761 & -0.11318 \\ 
         \hline
     \end{tabular}
+    \label{table:topicextr}
     \captionof{table}{Dialogue topics extraction experiments}
 \end{center}
 
@@ -782,10 +792,22 @@ Additionally, because of the absence of financial opportunities, open-source mod
 Summarizing all the results of the article:
 \begin{itemize}
     \item Suitable datasets were selected, experiments were carried out on them at all stages and quality metrics of the selected algorithms were obtained;
-    \item Among the available solutions, the best available metrics were selected. Experiments were carried out with each of the algorithms at each stage on ready-made models, pre-trained and trained from scratch. The best models were added to the final pipeline;;
-    \item At the topic extraction stage, a study was conducted on the use of LLM. The best open-source LLMs were selected for experiments with zero-shot, feat-shot and fine-tuning. The generative approach using LLM shows the results of the best available extractive solutions for topic modeling;
-    \item A suitable set of metrics was identified and selected to evaluate the quality of each stage. In order to utilise the metrics, a library with an implementation was Investigated and integrated into pipeline.
+    \item Among the available solutions, the best available metrics were selected. Experiments were carried out with each of the algorithms at each stage on ready-made models, pre-trained and trained from scratch. The best models were added to the final pipeline;
+    \item At the topic extraction stage, a study was conducted on the use of LLM. The best open-source LLMs were selected for experiments with zero-shot, feat-shot and fine-tuning. Using LLM at this stage, it was possible to increase the metrics for audio dialogues. \\
+     - Topic Diversity was increased around 10 times, and Topic Coherence is about the same value compared to BertTopic and LSA as shown in \ref{table:topicextr}; \\
+     - As for the textual dialogues worth noting that the increase ща Topic Deversity is less and on Topic Coherence BertTopic sometimes shown higher results.
 \end{itemize}
 
 \putbibliography
+\nocite{hydro:2023}
+\nocite{sesseg:2016}
+\nocite{todbert:2020}
+\nocite{topaware:2020}
+\nocite{Plaquet23:2023}
+\nocite{dialsystem:2018}
+\nocite{jointmdl:2020}
+\nocite{clusterllm:2023}
+\nocite{atnm:2023}
+\nocite{plsa:2013}
+
 \end{document}
