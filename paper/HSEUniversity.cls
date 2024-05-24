@@ -4,7 +4,7 @@
 \LoadClass[fontsize=14bp]{scrreprt}
 \RequirePackage{ifpdf}
 \RequirePackage{kvoptions}
-\RequirePackage[a4paper,left=25mm,right=10mm,top=20mm,bottom=25mm,footskip=10mm]{geometry}
+\RequirePackage[a4paper,left=30mm,right=10mm,top=20mm,bottom=20mm,footskip=10mm]{geometry}
 \usepackage{array}
 \RequirePackage{cmap}						% Улучшенный поиск русских слов в полученном pdf-файле
 \RequirePackage[T2A]{fontenc}				% Поддержка русских букв
