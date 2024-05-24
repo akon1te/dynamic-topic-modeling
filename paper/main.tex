@@ -792,7 +792,7 @@ Additionally, because of the absence of financial opportunities, open-source mod
 Summarizing all the results of the article:
 \begin{itemize}
     \item Suitable datasets were selected, experiments were carried out on them at all stages and quality metrics of the selected algorithms were obtained;
-    \item Among the available solutions, the best available metrics were selected. Experiments were carried out with each of the algorithms at each stage on ready-made models, pre-trained and trained from scratch. The best models were added to the final pipeline;
+    \item Among the available solutions, the best available metrics were selected. Experiments were carried out with each of the algorithms at each stage on ready-made models, trained from scratch and fine-tuned. The best models were added to the final pipeline;
     \item In terms of dialogues segmentation, BERT was trained specifically for audio dataset to calculate depth scores and gave better results than TextTililng by 0.1 for f1 metrics and 0.15 less for pk and windiff.
     \item At the topic extraction stage, a study was conducted on the use of LLM. The best open-source LLMs were selected for experiments with zero-shot, feat-shot and fine-tuning. Using LLM at this stage, it was possible to increase the metrics for audio dialogues. \\
      - Topic Diversity was increased around 10 times, and Topic Coherence is about the same value compared to BertTopic and LSA as shown in \ref{table:topicextr}; \\
