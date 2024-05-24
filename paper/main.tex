@@ -40,7 +40,7 @@ The main objectives of the research work is to create and apply Dynamic Topic Mo
 To solve this problem, you will need to complete the following tasks 
 \begin{enumerate}
     \item The identification of suitable datasets for experiments;
-    \item The investigation of the best suitable open-source solutions for speaker diarisation, dialogue clustering, topic extraction and topic evolution;
+    \item The investigation of the best suitable open-source solutions for speaker diarization, dialogue clustering, topic extraction and topic evolution;
     \item The exploration of the possibilities of using Large Language Models for some stages and the selection of models suitable for training in limited resources;
     \item The selection of appropriate metrics and measurement of the quality of the approaches used at each stage;
 \end{enumerate}
@@ -285,8 +285,8 @@ For now, there are 5 models of different sizes, 4 of which are opensourced. Spec
 
 Since one of the significant tasks is to use DTM for audio dialogues, the first, but optional, stage of our pipeline will be a model for speaker diarization. 
 
-Speaker diarisation is the process of automatically segmenting and identifying different speakers in an audio recording. 
-The goal of speaker diarisation is to divide the audio stream into non-homogeneous segments, each segment corresponding to a specific speaker or speaker turn.
+Speaker diarization is the process of automatically segmenting and identifying different speakers in an audio recording. 
+The goal of speaker diarization is to divide the audio stream into non-homogeneous segments, each segment corresponding to a specific speaker or speaker turn.
 
 The fundamental process of building a speaker diarization system involves the following steps:
 
@@ -409,7 +409,7 @@ As for the quality evaluation of the extracted topics, we will use two metrics: 
 \section{Pipeline configuration}
 
 The pipeline of dynamic topic modelling of audio dialogues, which will be considered in this paper, is divided into several main stages. 
-These include ASR, dialogue segmentation, topic extraction and topic evolution. 
+These include speaker diarization, dialogue segmentation, topic extraction and topic evolution. 
 
 \begin{figure}[h]
     \centering
@@ -521,13 +521,13 @@ As for the audio dialogues, we will use QMSum, which includes the audio recordin
     \begin{center}
         \begin{tabular}{ | c | c | c | c |} 
             \hline
-            dataset & train/val/test & Avg Turns & Avg tokens \\ 
+            dataset & train/val/test & Avg Turns \\ 
             \hline
-            SuperDialseg & 6984/1322/1322 & 13 & 239 \\ 
-            Tiage &  7939/-/1000 & 14.7  & - \\ 
+            SuperDialseg & 6984/1322/1322 & 13  \\ 
+            Tiage &  7939/-/1000 & 14.7 \\ 
             \hline
-            Product Meetings (AMI) & 137 & 535.6 & - \\ 
-            Academic Meetings (ICSI) & 59 & 819.0 & - \\ 
+            Product Meetings (AMI) & 137 & 535.6 \\ 
+            Academic Meetings (ICSI) & 59 & 819.0 \\
             \hline
         \end{tabular}
     \end{center}
@@ -575,20 +575,20 @@ At this stage, experiments will be conducted using the encoder model for the Utt
         TextTilling & 0.469 & 0.488 & 0.204 & \cellcolor{green!20} 0.446 & \cellcolor{green!20} 0.458 & \cellcolor{green!20} 0.378 \\
         TeT + BERT & \cellcolor{green!20} 0.425 & \cellcolor{green!20} 0.439 & \cellcolor{green!20} 0.285 & 0.522 & 0.531 & 0.201 \\
         \hline\ 
-        Our method & 0.4465 & 0.4575 & 0.367 & 0.5071 & 0.5219 & 0.430 \\ 
-        Our method + fine-tune & \cellcolor{green!40} 0.4094 & \cellcolor{green!40} 0.4048 & \cellcolor{green!40} 0.7374 & \cellcolor{green!40} 0.4361 & \cellcolor{green!40} 0.44510 & \cellcolor{green!40} 0.7421 \\ 
+        Our method & 0.447 & 0.457 & 0.367 & 0.507 & 0.522 & 0.430 \\ 
+        Our method + fine-tune & \cellcolor{green!40} 0.409 & \cellcolor{green!40} 0.405 & \cellcolor{green!40} 0.737 & \cellcolor{green!40} 0.436 & \cellcolor{green!40} 0.445 & \cellcolor{green!40} 0.742 \\ 
         \hline
         \multirow{2}{*}{models} & \multicolumn{3}{| c |}{AMI} & \multicolumn{3}{| c |}{ICSI} \\
         \cline{2-7}
         & Pk $\downarrow$ & wd $\downarrow$ & f1 & Pk $\downarrow$ & wd $\downarrow$ & f1 \\ 
         \hline
-        GreedySeg & 0.885 & 0.792 & 0.3641 & 0.762 & 0.730 & 0.309 \\
+        GreedySeg & 0.885 & 0.792 & 0.364 & 0.762 & 0.730 & 0.309 \\
         GraphSeg & 0.875 & 0.750 & 0.422 & 0.810 & 0.756 & 0.275 \\
-        TextTilling & Pk & wd & f1 & Pk & wd & f1 \\
-        TeT + BERT & Pk & wd & 0.443 & Pk & wd & 0.158 \\ 
+        TextTilling & 0.867 & 0.730 & 0.429 & 0.805 & 0.753 & 0.295 \\
+        TeT + BERT & 0.794 & 0.705 & 0.510 & 0.798 & 0.720 & 0.158 \\ 
         \hline
-        Our method & \cellcolor{green!20} 0.6447 & \cellcolor{green!20} 0.7394 & \cellcolor{green!20} 0.551 & \cellcolor{green!20} 0.6148 & \cellcolor{green!20} 0.6731 & \cellcolor{green!20} 0.779 \\ 
-        Our method + fine-tune & \cellcolor{green!40} 0.5279 & \cellcolor{green!40} 0.6932 & \cellcolor{green!40} 0.610 & \cellcolor{green!40} 0.5842 & \cellcolor{green!40} 0.5932 & \cellcolor{green!40} 0.815 \\ 
+        Our method & \cellcolor{green!20} 0.645 & \cellcolor{green!20} 0.739 & \cellcolor{green!20} 0.551 & \cellcolor{green!20} 0.615 & \cellcolor{green!20} 0.673 & \cellcolor{green!20} 0.779 \\ 
+        Our method + fine-tune & \cellcolor{green!40} 0.528 & \cellcolor{green!40} 0.693 & \cellcolor{green!40} 0.610 & \cellcolor{green!40} 0.584 & \cellcolor{green!40} 0.593 & \cellcolor{green!40} 0.815 \\ 
         \hline
     \end{tabular}
     \captionof{table}{Dialogue segmentation experiments}
@@ -793,9 +793,10 @@ Summarizing all the results of the article:
 \begin{itemize}
     \item Suitable datasets were selected, experiments were carried out on them at all stages and quality metrics of the selected algorithms were obtained;
     \item Among the available solutions, the best available metrics were selected. Experiments were carried out with each of the algorithms at each stage on ready-made models, pre-trained and trained from scratch. The best models were added to the final pipeline;
+    \item In terms of dialogues segmentation, BERT was trained specifically for audio dataset to calculate depth scores and gave better results than TextTililng by 0.1 for f1 metrics and 0.15 less for pk and windiff.
     \item At the topic extraction stage, a study was conducted on the use of LLM. The best open-source LLMs were selected for experiments with zero-shot, feat-shot and fine-tuning. Using LLM at this stage, it was possible to increase the metrics for audio dialogues. \\
      - Topic Diversity was increased around 10 times, and Topic Coherence is about the same value compared to BertTopic and LSA as shown in \ref{table:topicextr}; \\
-     - As for the textual dialogues worth noting that the increase ща Topic Deversity is less and on Topic Coherence BertTopic sometimes shown higher results.
+     - As for the textual dialogues worth noting that the increase of Topic Deversity is less and on Topic Coherence BertTopic sometimes shown higher results.
 \end{itemize}
 
 \putbibliography
